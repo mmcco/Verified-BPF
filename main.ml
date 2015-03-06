@@ -9,10 +9,10 @@ open Bpf
 let get_opcode (instr) =
     match instr with
     | SoloInstr opcode -> opcode
-    | ImmInstr (opcode, _) -> opcode
-    | OffsetInstr (opcode, _) -> opcode
-    | ImmBrInstr (opcode, _, _, _) -> opcode
-    | BrInstr (opcode, _, _) -> opcode
+    | ImmInstr (opcode, imm) -> opcode
+    | OffsetInstr (opcode, offset) -> opcode
+    | ImmBrInstr (opcode, imm, b1, b2) -> opcode
+    | BrInstr (opcode, b1, b2) -> opcode
     | LenInstr opcode -> opcode
 
 let rec fold_unit_list (u_list) =

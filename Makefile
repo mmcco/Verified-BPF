@@ -10,4 +10,4 @@ all:
 	ocamlopt lex.ml parser.ml bpf.ml main.ml
 
 clean:
-	rm *.cmo *.cmi *.mli *.automaton lex.ml parser.ml
+	rm -f a.out *.o *.cmo *.cmx *.cmi *.mli *.automaton lex.ml parser.ml

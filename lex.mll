@@ -21,111 +21,120 @@ let opcode = letter (letter | '_')*
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 
-rule bpf_lex =
-  parse
+let offset_op =
   (* A <- P[k:4] *)
-  | "ld_word" { OFFSET_OP (Lexing.lexeme lexbuf) }
+    "ld_word"
   (* A <- P[k:2] *)
-  | "ld_half" { OFFSET_OP (Lexing.lexeme lexbuf) }
+  | "ld_half"
   (* A <- P[k:1] *)
-  | "ld_byte" { OFFSET_OP (Lexing.lexeme lexbuf) }
+  | "ld_byte"
   (* A <- P[X+k:4] *)
-  | "ld_ofst_word" { OFFSET_OP (Lexing.lexeme lexbuf) }
+  | "ld_ofst_word"
   (* A <- P[X+k:2] *)
-  | "ld_ofst_half" { OFFSET_OP (Lexing.lexeme lexbuf) }
+  | "ld_ofst_half"
   (* A <- P[X+k:1] *)
-  | "ldx_byte" { OFFSET_OP (Lexing.lexeme lexbuf) }
-  (* A <- len *)
-  | "ld_len" { LEN_OP (Lexing.lexeme lexbuf) }
-  (* A <- k *)
-  | "ld_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "ldx_byte"
   (* A <- M[k] *)
-  | "ld_mem" { OFFSET_OP (Lexing.lexeme lexbuf) }
-  
-  (*
-   Loads to index register
-  *)
-  (* X <- k *)
-  | "ldx_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "ld_mem"
   (* X <- M[k] *)
-  | "ldx_mem" { OFFSET_OP (Lexing.lexeme lexbuf) }
-  (* X <- len *)
-  | "ldx_len" { LEN_OP (Lexing.lexeme lexbuf) }
+  | "ldx_mem"
+  (* M[k] <- A *)
+  | "store"
+  (* M[k] <- X *)
+  | "store_x"
+
+let solo_op =
+  (* Return, accept A bytes. *)
+    "ret_a"
+  (* Return, accept k bytes. *)
+  | "ret_k"
+  (* X <- A *)
+  | "x_store_a"
+  (* A <- X *)
+  | "a_store_x"
   (* X <- hdr_len *)
   (* doesn't fit well, needs to be special case *)
   (* so, we keep it as a lone opcode, exclude HDR_LEN *)
   (* was: X <- 4*(P[k:1]&0xf) *)
-  | "ldx_hdr_len" { SOLO_OP (Lexing.lexeme lexbuf) }
-  
-  (* M[k] <- A *)
-  | "store" { OFFSET_OP (Lexing.lexeme lexbuf) }
-  
-  (* M[k] <- X *)
-  | "store_x" { OFFSET_OP (Lexing.lexeme lexbuf) }
-  
+  | "ldx_hdr_len"
+
+let imm_op =
+  (* A <- k *)
+    "ld_imm"
   (* A <- A + k *)
-  | "add_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "add_imm"
   (* A <- A - k *)
-  | "sub_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "sub_imm"
   (* A <- A * k *)
-  | "mul_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "mul_imm"
   (* A <- A / k *)
-  | "div_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "div_imm"
   (* A <- A & k *)
-  | "and_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "and_imm"
   (* A <- A | k *)
-  | "or_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "or_imm"
   (* A <- A << k *)
-  | "sl_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "sl_imm"
   (* A <- A >> k *)
-  | "sr_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "sr_imm"
   (* A <- A + X *)
-  | "add_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "add_x"
   (* A <- A - X *)
-  | "sub_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "sub_x"
   (* A <- A * X *)
-  | "mul_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "mul_x"
   (* A <- A / X *)
-  | "div_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "div_x"
   (* A <- A & X *)
-  | "and_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "and_x"
   (* A <- A | X *)
-  | "or_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "or_x"
   (* A <- A << X *)
-  | "sl_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "sl_x"
   (* A <- A >> X *)
-  | "sr_x" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "sr_x"
   (* A <- -A *)
-  | "neg" { IMM_OP (Lexing.lexeme lexbuf) }
-  
+  | "neg"
   (* pc += k *)
-  | "jmp_imm" { IMM_OP (Lexing.lexeme lexbuf) }
+  | "jmp_imm"
+  (* X <- k *)
+  | "ldx_imm"
+
+let imm_br_op =
   (* pc += (A > k) ? jt : jf *)
-  | "jgt_imm" { IMM_BR_OP (Lexing.lexeme lexbuf) }
+    "jgt_imm"
   (* pc += (A >= k) ? jt : jf *)
-  | "jge_imm" { IMM_BR_OP (Lexing.lexeme lexbuf) }
+  | "jge_imm"
   (* pc += (A == k) ? jt : jf *)
-  | "jeq_imm" { IMM_BR_OP (Lexing.lexeme lexbuf) }
+  | "jeq_imm"
   (* pc += (A & k) ? jt : jf *)
-  | "jand_imm" { IMM_BR_OP (Lexing.lexeme lexbuf) }
+  | "jand_imm"
+  
+let len_op =
+  (* A <- len *)
+    "ld_len"
+  (* X <- len *)
+  | "ldx_len"
+
+let br_op =
   (* pc += (A > X) ? jt : jf *)
-  | "jgt_x" { BR_OP (Lexing.lexeme lexbuf) }
+    "jgt_x"
   (* pc += (A >= X) ? jt : jf *)
-  | "jge_x" { BR_OP (Lexing.lexeme lexbuf) }
+  | "jge_x"
   (* pc += (A == X) ? jt : jf *)
-  | "jeq_x" { BR_OP (Lexing.lexeme lexbuf) }
+  | "jeq_x"
   (* pc += (A & X) ? jt : jf *)
-  | "jand_x" { BR_OP (Lexing.lexeme lexbuf) }
-  
-  (* Return, accept A bytes. *)
-  | "ret_a" { SOLO_OP (Lexing.lexeme lexbuf) }
-  (* Return, accept k bytes. *)
-  | "ret_k" { SOLO_OP (Lexing.lexeme lexbuf) }
-  
-  (* X <- A *)
-  | "x_store_a" { SOLO_OP (Lexing.lexeme lexbuf) }
-  (* A <- X *)
-  | "a_store_x" { SOLO_OP (Lexing.lexeme lexbuf) }
+  | "jand_x"
+
+
+rule bpf_lex =
+  parse
+  | solo_op { SOLO_OP (Lexing.lexeme lexbuf) }
+  | br_op { BR_OP (Lexing.lexeme lexbuf) }
+  | len_op { LEN_OP (Lexing.lexeme lexbuf) }
+  | imm_op { IMM_OP (Lexing.lexeme lexbuf) }
+  | imm_br_op { IMM_BR_OP (Lexing.lexeme lexbuf) }
+  | offset_op { OFFSET_OP (Lexing.lexeme lexbuf) }
 
   (* syntactic sugar *)
   | "<-"  { bpf_lex lexbuf }
