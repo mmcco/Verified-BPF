@@ -55,7 +55,7 @@ rule bpf_lex =
   (* doesn't fit well, needs to be special case *)
   (* so, we keep it as a lone opcode, exclude HDR_LEN *)
   (* was: X <- 4*(P[k:1]&0xf) *)
-  | "ldx_hdr_len" { OFFSET_OP (Lexing.lexeme lexbuf) }
+  | "ldx_hdr_len" { SOLO_OP (Lexing.lexeme lexbuf) }
   
   (* M[k] <- A *)
   | "store" { OFFSET_OP (Lexing.lexeme lexbuf) }
