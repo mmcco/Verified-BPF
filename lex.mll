@@ -15,6 +15,7 @@ let next_line lexbuf =
 
 let digit = ['0'-'9']
 let num = ['1'-'9'] digit*
+let val_size = '1' | '2' | '4'
 let letter = ['a'-'z']
 let opcode = letter (letter | '_')*
 let white = [' ' '\t']+
@@ -127,24 +128,19 @@ rule bpf_lex =
   | "a_store_x" { SOLO_OP (Lexing.lexeme lexbuf) }
 
   (* syntactic sugar *)
-  | "<-"              { bpf_lex lexbuf }
-  (* syntactic sugar *)
-  | "len"             { bpf_lex lexbuf }
-  | num               { IMM (int_of_string (Lexing.lexeme lexbuf)) }
-  | "P[" num "]"      { PKT_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "P[" num ":1]"    { PKT_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "P[" num ":2]"    { PKT_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "P[" (num as n) ":4]"    { print_endline n; PKT_ADDR (int_of_string n) }
-  | "P[X+" num ":1]"  { PKT_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "P[X+" num ":2]"  { PKT_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "P[X+" num ":4]"  { PKT_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[" num "]"      { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[" num ":1]"    { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[" num ":2]"    { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[" num ":4]"    { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[X+" num ":1]"  { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[X+" num ":2]"  { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
-  | "M[X+" num ":4]"  { MEM_ADDR (int_of_string (Lexing.lexeme lexbuf)) }
+  | "<-"  { bpf_lex lexbuf }
+  | "len" { bpf_lex lexbuf }
+
+  | num as n   { IMM (int_of_string n) }
+
+  | "P[" (num as n) "]"                 { PKT_ADDR (int_of_string n) }
+  | "P[" (num as n) ':' val_size ']'    { PKT_ADDR (int_of_string n) }
+  | "P[X+" (num as n) ':' val_size ']'  { PKT_ADDR (int_of_string n) }
+
+  | "M[" (num as n) "]"                 { MEM_ADDR (int_of_string n) }
+  | "M[" (num as n) ':' val_size ']'    { MEM_ADDR (int_of_string n) }
+  | "M[X+" (num as n) ':' val_size ']'  { MEM_ADDR (int_of_string n) }
+
   | white             { bpf_lex lexbuf }
   | newline           { next_line lexbuf; NEWLINE }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
