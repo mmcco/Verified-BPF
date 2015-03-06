@@ -1,19 +1,30 @@
-open Pervasives
 open Array
 open Sys
 open Lex
 open Lexing
 open Parser
 open Bpf
+open Printf
+
+let get_addr (rel_addr) =
+    match rel_addr with
+    | PktAddr addr -> addr
+    | MemAddr addr -> addr
 
 let get_opcode (instr) =
     match instr with
-    | SoloInstr opcode -> opcode
-    | ImmInstr (opcode, imm) -> opcode
-    | OffsetInstr (opcode, offset) -> opcode
-    | ImmBrInstr (opcode, imm, b1, b2) -> opcode
-    | BrInstr (opcode, b1, b2) -> opcode
-    | LenInstr opcode -> opcode
+    | SoloInstr opcode ->
+            Printf.sprintf "%s" opcode
+    | ImmInstr (opcode, imm) ->
+            Printf.sprintf "%s %d" opcode imm
+    | OffsetInstr (opcode, offset) ->
+            Printf.sprintf "%s %d" opcode (get_addr offset)
+    | ImmBrInstr (opcode, imm, b1, b2) ->
+            Printf.sprintf "%s %d %d %d" opcode imm (get_addr b1) (get_addr b2)
+    | BrInstr (opcode, b1, b2) ->
+            Printf.sprintf "%s %d %d" opcode (get_addr b1) (get_addr b2)
+    | LenInstr opcode ->
+            Printf.sprintf "%s" opcode
 
 let rec fold_unit_list (u_list) =
     match u_list with
