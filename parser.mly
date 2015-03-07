@@ -31,16 +31,16 @@ pinstrs:
 
 pinstr: 
     | opcode=SOLO_OP
-      { Bpf.SoloInstr (opcode) }
+      { Bpf.SoloInstr opcode }
     | opcode=LEN_OP
-      { Bpf.LenInstr (opcode) }
-    | opcode=IMM_OP; imm=IMM
+      { Bpf.LenInstr opcode }
+    | opcode=IMM_OP imm=IMM
       { Bpf.ImmInstr (opcode, imm) }
-    | opcode=OFFSET_OP; offset=PKT_ADDR
-      { Bpf.OffsetInstr (opcode, Bpf.PktAddr (offset)) }
-    | opcode=OFFSET_OP; offset=MEM_ADDR
-      { Bpf.OffsetInstr (opcode, Bpf.MemAddr (offset)) }
-    | opcode=IMM_BR_OP; imm=IMM; b1=OFFSET; b2=OFFSET
+    | opcode=OFFSET_OP offset=PKT_ADDR
+      { Bpf.OffsetInstr (opcode, Bpf.PktAddr offset) }
+    | opcode=OFFSET_OP offset=MEM_ADDR
+      { Bpf.OffsetInstr (opcode, Bpf.MemAddr offset) }
+    | opcode=IMM_BR_OP imm=IMM; b1=OFFSET; b2=OFFSET
       { Bpf.ImmBrInstr (opcode, imm, b1, b2) }
-    | opcode=BR_OP; b1=OFFSET; b2=OFFSET
+    | opcode=BR_OP b1=OFFSET; b2=OFFSET
       { Bpf.BrInstr (opcode, b1, b2) }

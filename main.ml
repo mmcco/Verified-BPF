@@ -20,9 +20,9 @@ let get_opcode (instr) =
     | OffsetInstr (opcode, offset) ->
             Printf.sprintf "%s %d" opcode (get_addr offset)
     | ImmBrInstr (opcode, imm, b1, b2) ->
-            Printf.sprintf "%s %d %d %d" opcode imm (get_addr b1) (get_addr b2)
+            Printf.sprintf "%s %d %d %d" opcode imm b1 b2
     | BrInstr (opcode, b1, b2) ->
-            Printf.sprintf "%s %d %d" opcode (get_addr b1) (get_addr b2)
+            Printf.sprintf "%s %d %d" opcode b1 b2
     | LenInstr opcode ->
             Printf.sprintf "%s" opcode
 
