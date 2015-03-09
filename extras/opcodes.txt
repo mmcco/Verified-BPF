@@ -1,0 +1,100 @@
+  (* Loads to accumulator *)
+  | -> opcode
+  (* A <- P[k:4] *)
+  | -> opcode
+  (* A <- P[k:2] *)
+  | -> opcode
+  (* A <- P[k:1] *)
+  | -> opcode
+  (* A <- P[X+k:4] *)
+  | -> opcode
+  (* A <- P[X+k:2] *)
+  | -> opcode
+  (* A <- P[X+k:1] *)
+  | -> opcode
+  (* A <- len *)
+  | -> opcode
+  (* A <- k *)
+  | -> opcode
+  (* A <- M[k] *)
+  | -> opcode
+
+(* Loads to index register *)
+  (* X <- k *)
+  | -> opcode
+  (* X <- M[k] *)
+  | -> opcode
+  (* X <- len *)
+  | -> opcode
+  (* X <- 4*(P[k:1]&0xf) *)
+  | -> opcode
+
+  (* M[k] <- A *)
+  | -> opcode
+
+  (* M[k] <- X *)
+  | -> opcode
+
+  (* A <- A + k *)
+  | -> opcode
+  (* A <- A - k *)
+  | -> opcode
+  (* A <- A * k *)
+  | -> opcode
+  (* A <- A / k *)
+  | -> opcode
+  (* A <- A & k *)
+  | -> opcode
+  (* A <- A | k *)
+  | -> opcode
+  (* A <- A << k *)
+  | -> opcode
+  (* A <- A >> k *)
+  | -> opcode
+  (* A <- A + X *)
+  | -> opcode
+  (* A <- A - X *)
+  | -> opcode
+  (* A <- A * X *)
+  | -> opcode
+  (* A <- A / X *)
+  | -> opcode
+  (* A <- A & X *)
+  | -> opcode
+  (* A <- A | X *)
+  | -> opcode
+  (* A <- A << X *)
+  | -> opcode
+  (* A <- A >> X *)
+  | -> opcode
+  (* A <- -A *)
+  | -> opcode
+
+  (* pc += k *)
+  | -> opcode
+  (* pc += (A > k) ? jt : jf *)
+  | -> opcode
+  (* pc += (A >= k) ? jt : jf *)
+  | -> opcode
+  (* pc += (A == k) ? jt : jf *)
+  | -> opcode
+  (* pc += (A & k) ? jt : jf *)
+  | -> opcode
+  (* pc += (A > X) ? jt : jf *)
+  | -> opcode
+  (* pc += (A >= X) ? jt : jf *)
+  | -> opcode
+  (* pc += (A == X) ? jt : jf *)
+  | -> opcode
+  (* pc += (A & X) ? jt : jf *)
+  | -> opcode
+
+  (* Accept A bytes. *)
+  | -> opcode
+  (* Accept k bytes. *)
+  | -> opcode
+
+  (* X <- A *)
+  | -> opcode
+  (* A <- X *)
+  | -> opcode
