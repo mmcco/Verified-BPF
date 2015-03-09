@@ -1,1 +1,6 @@
 extras
+*.glob
+*.automaton
+*.vo
+*.cmi
+*.cmo

@@ -1,4 +1,4 @@
-Require Import Parser.
+Require Main.
 Extraction Language Ocaml.
 
-Extraction "parser.ml" Parser.
+Extraction "main.ml" Main.Make.
