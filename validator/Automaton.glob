@@ -1,0 +1,196 @@
+DIGEST 8e3262a64a616a69b68cb6f76d44a3eb
+FAutomaton
+R1045:1051 Grammar <> <> lib
+R1069:1074 Coq.Structures.Orders <> <> lib
+R1092:1099 Alphabet <> <> lib
+R1117:1120 Coq.Lists.List <> <> lib
+R1138:1143 Coq.Program.Syntax <> <> lib
+modtype 1159:1165 <> AutInit
+R1230:1238 Grammar T <> mod
+mod 1225:1228 <> AutInit.Gram
+ax 1338:1349 AutInit noninitstate
+inst 1378:1393 AutInit NonInitStateAlph
+R1397:1404 Alphabet <> Alphabet class
+R1406:1417 Automaton AutInit noninitstate defax
+ax 1433:1441 AutInit initstate
+inst 1470:1482 AutInit InitStateAlph
+R1486:1493 Alphabet <> Alphabet class
+R1495:1503 Automaton AutInit initstate defax
+ax 1611:1637 AutInit last_symb_of_non_init_state
+R1656:1661 Automaton AutInit.Gram symbol ind
+R1640:1651 Automaton AutInit noninitstate defax
+R1668:1674 Automaton AutInit <> modtype
+R1703:1709 Automaton AutInit <> mod
+mod 1685:1689 <> Types
+ind 1951:1955 Types state
+constr 1966:1969 Types Init
+constr 1997:2001 Types Ninit
+R1985:1989 Automaton <> state ind
+R1972:1980 Automaton Init initstate defax
+R2020:2024 Automaton <> state ind
+R2004:2015 Automaton Init noninitstate defax
+inst 2047:2055 Types StateAlph
+R2059:2066 Alphabet <> Alphabet class
+R2068:2072 Automaton Types state ind
+R2348:2361 Alphabet <> AlphabetFinite meth
+R2083:2100 Alphabet <> AlphabetComparable meth
+R2108:2336 Alphabet <> Build_Comparable constr
+R2147:2147 Automaton <> y var
+R2144:2144 Automaton <> x var
+R2156:2165 Coq.Init.Datatypes <> comparison ind
+R2184:2187 Automaton Types Init constr
+R2192:2196 Automaton Types Ninit constr
+R2203:2204 Coq.Init.Datatypes <> Lt constr
+R2218:2221 Automaton Types Init constr
+R2226:2229 Automaton Types Init constr
+R2236:2242 Alphabet <> compare meth
+R2246:2246 Automaton <> y var
+R2244:2244 Automaton <> x var
+R2260:2264 Automaton Types Ninit constr
+R2269:2272 Automaton Types Init constr
+R2279:2280 Coq.Init.Datatypes <> Gt constr
+R2294:2298 Automaton Types Ninit constr
+R2303:2307 Automaton Types Ninit constr
+R2314:2320 Alphabet <> compare meth
+R2324:2324 Automaton <> y var
+R2322:2322 Automaton <> x var
+R2369:2419 Alphabet <> Build_Finite constr
+R2398:2401 Coq.Init.Datatypes <> :list_scope:x_'++'_x not
+R2381:2383 Coq.Lists.List <> map def
+R2390:2397 Alphabet <> all_list meth
+R2385:2388 Automaton Types Init constr
+R2402:2404 Coq.Lists.List <> map def
+R2412:2419 Alphabet <> all_list meth
+R2406:2410 Automaton Types Ninit constr
+R2517:2531 Alphabet <> compare_antisym meth
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2517:2531 Alphabet <> compare_antisym meth
+R2517:2531 Alphabet <> compare_antisym meth
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2600:2612 Alphabet <> compare_trans meth
+R2600:2612 Alphabet <> compare_trans meth
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2669:2681 Alphabet <> compare_trans meth
+R2669:2681 Alphabet <> compare_trans meth
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2798:2807 Alphabet <> compare_eq def
+R2798:2807 Alphabet <> compare_eq def
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2838:2847 Alphabet <> compare_eq def
+R2838:2847 Alphabet <> compare_eq def
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2901:2909 Coq.Lists.List <> in_or_app thm
+R2959:2964 Coq.Lists.List <> in_map thm
+R2974:2988 Alphabet <> all_list_forall meth
+R2901:2909 Coq.Lists.List <> in_or_app thm
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R0:-1 Automaton <> y var
+R2959:2964 Coq.Lists.List <> in_map thm
+R2959:2964 Coq.Lists.List <> in_map thm
+R2974:2988 Alphabet <> all_list_forall meth
+R2974:2988 Alphabet <> all_list_forall meth
+R3010:3014 Automaton Types Ninit constr
+R3053:3056 Automaton Types Init constr
+ind 4110:4125 Types lookahead_action
+constr 4150:4158 Types Shift_act
+constr 4269:4278 Types Reduce_act
+constr 4321:4328 Types Fail_act
+R4133:4140 Automaton Init.Gram terminal defax
+R4170:4181 Automaton Init noninitstate defax
+R4243:4258 Automaton <> lookahead_action ind
+R4207:4209 Coq.Init.Logic <> :type_scope:x_'='_x not
+R4201:4201 Automaton Init.Gram T constr
+R4210:4236 Automaton Init last_symb_of_non_init_state defax
+R4238:4238 Automaton <> s var
+R4295:4310 Automaton <> lookahead_action ind
+R4281:4290 Automaton Init.Gram production defax
+R4331:4346 Automaton <> lookahead_action ind
+R4375:4383 Automaton Types Shift_act constr
+R4414:4423 Automaton Types Reduce_act constr
+R4454:4461 Automaton Types Fail_act constr
+ind 4484:4489 Types action
+constr 4498:4515 Types Default_reduce_act
+constr 4543:4555 Types Lookahead_act
+R4532:4537 Automaton <> action ind
+R4518:4527 Automaton Init.Gram production defax
+R4608:4613 Automaton <> action ind
+R4572:4579 Automaton Init.Gram terminal defax
+R4582:4597 Automaton Types lookahead_action ind
+R4599:4602 Automaton <> term var
+rec 4865:4868 Types item
+proj 4924:4932 Types prod_item
+proj 4987:4998 Types dot_pos_item
+proj 5150:5164 Types lookaheads_item
+R4935:4944 Automaton Init.Gram production defax
+R5001:5003 Coq.Init.Datatypes <> nat ind
+R5167:5170 Coq.Init.Datatypes <> list ind
+R5172:5179 Automaton Init.Gram terminal defax
+R5190:5194 Automaton Types <> mod
+modtype 5210:5210 <> T
+R5223:5229 Automaton AutInit <> mod
+R5234:5238 Automaton Types <> modtype
+R5269:5280 Grammar Defs <> modtype
+R5282:5285 Automaton T.Gram <> modtype
+mod 5257:5264 <> T.GramDefs
+ax 5367:5374 T start_nt
+R5390:5400 Automaton T.Gram nonterminal defax
+R5377:5385 Automaton T initstate defax
+ax 5492:5503 T action_table
+R5520:5525 Automaton T action ind
+R5511:5515 Automaton T state ind
+ax 5588:5597 T goto_table
+R5619:5629 Automaton T.Gram nonterminal defax
+R5636:5641 Coq.Init.Datatypes <> option ind
+R5643:5644 Coq.Init.Specif <> :type_scope:'{'_x_':'_x_'|'_x_'}' not
+R5646:5646 Coq.Init.Specif <> :type_scope:'{'_x_':'_x_'|'_x_'}' not
+R5659:5661 Coq.Init.Specif <> :type_scope:'{'_x_':'_x_'|'_x_'}' not
+R5699:5700 Coq.Init.Specif <> :type_scope:'{'_x_':'_x_'|'_x_'}' not
+R5667:5669 Coq.Init.Logic <> :type_scope:x_'='_x not
+R5662:5663 Automaton T.Gram NT constr
+R5665:5666 Automaton <> nt var
+R5670:5696 Automaton T last_symb_of_non_init_state defax
+R5647:5658 Automaton T noninitstate defax
+R5600:5604 Automaton T state ind
+ax 5980:6006 T past_symb_of_non_init_state
+R6025:6028 Coq.Init.Datatypes <> list ind
+R6030:6035 Automaton T.Gram symbol ind
+R6009:6020 Automaton T noninitstate defax
+ax 6149:6176 T past_state_of_non_init_state
+R6195:6198 Coq.Init.Datatypes <> list ind
+R6210:6213 Coq.Init.Datatypes <> bool ind
+R6201:6205 Automaton T state ind
+R6179:6190 Automaton T noninitstate defax
+ax 6264:6277 T items_of_state
+R6289:6292 Coq.Init.Datatypes <> list ind
+R6294:6297 Automaton T item rec
+R6280:6284 Automaton T state ind
+ax 6428:6441 T nullable_nterm
+R6459:6462 Coq.Init.Datatypes <> bool ind
+R6444:6454 Automaton T.Gram nonterminal defax
+ax 6684:6694 T first_nterm
+R6712:6715 Coq.Init.Datatypes <> list ind
+R6717:6724 Automaton T.Gram terminal defax
+R6697:6707 Automaton T.Gram nonterminal defax
+R6731:6731 Automaton T <> modtype

@@ -1,0 +1,61 @@
+DIGEST 37551bd274c6568b8e154cb72cde85c4
+FTuples
+R1052:1055 Coq.Lists.List <> <> lib
+R1073:1090 Coq.Program.Syntax <> <> lib
+R1108:1115 Coq.Program.Equality <> <> lib
+def 1184:1194 <> arrows_left
+R1197:1200 Coq.Init.Datatypes <> list ind
+R1228:1236 Coq.Lists.List <> fold_left def
+R1255:1255 Tuples <> A var
+R1250:1250 Tuples <> B var
+def 1325:1336 <> arrows_right
+R1347:1350 Coq.Init.Datatypes <> list ind
+R1370:1379 Coq.Lists.List <> fold_right def
+R1398:1398 Tuples <> B var
+R1393:1393 Tuples <> A var
+def 1486:1490 <> tuple
+R1499:1502 Coq.Init.Datatypes <> list ind
+R1522:1531 Coq.Lists.List <> fold_right def
+R1543:1547 Tuples <> types var
+R1538:1541 Coq.Init.Datatypes <> unit ind
+R1533:1536 Coq.Init.Datatypes <> prod ind
+def 1560:1566 <> uncurry
+R1574:1577 Coq.Init.Datatypes <> list ind
+R1637:1639 Tuples <> res var
+R1623:1627 Tuples <> tuple def
+R1629:1632 Tuples <> args var
+R1599:1609 Tuples <> arrows_left def
+R1616:1618 Tuples <> res var
+R1611:1614 Tuples <> args var
+R1652:1655 Tuples <> args var
+R1714:1716 Tuples <> res var
+R1700:1704 Tuples <> tuple def
+R1706:1709 Tuples <> args var
+R1676:1686 Tuples <> arrows_left def
+R1693:1695 Tuples <> res var
+R1688:1691 Tuples <> args var
+R1729:1730 Coq.Lists.List ListNotations :list_scope:'['_']' not
+R1748:1748 Tuples <> f var
+R1757:1758 Coq.Init.Datatypes <> :list_scope:x_'::'_x not
+R1793:1793 Tuples <> p var
+R1806:1812 Tuples <> uncurry def
+R1820:1820 Tuples <> t var
+R1818:1818 Tuples <> f var
+R1823:1823 Tuples <> d var
+R1831:1833 Tuples <> res var
+prf 1843:1853 <> JMeq_eqrect
+R1879:1879 Tuples <> U var
+R1885:1885 Tuples <> U var
+R1899:1899 Tuples <> P var
+R1901:1901 Tuples <> a var
+R1908:1908 Coq.Init.Logic <> :type_scope:x_'='_x not
+R1907:1907 Tuples <> a var
+R1909:1909 Tuples <> b var
+R1934:1937 Coq.Program.Equality <> ::x_'~='_x not
+R1917:1923 Coq.Init.Logic <> eq_rect scheme
+R1933:1933 Tuples <> e var
+R1931:1931 Tuples <> b var
+R1929:1929 Tuples <> x var
+R1927:1927 Tuples <> P var
+R1925:1925 Tuples <> a var
+R1938:1938 Tuples <> x var
