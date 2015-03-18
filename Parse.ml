@@ -1,3 +1,5 @@
+open Lexing
+
 module CharSet = Set.Make(struct type t = char let compare = compare end)
 (*
   let main () =
@@ -18,19 +20,21 @@ let () =
     then open_in Sys.argv.(1)
     else stdin
   in
-  let lb = Lexer.init name ic in
+  let lexbuf = Lexing.from_channel cin in
+  let rec inf = Datatypes.S inf in
+  (* let pinstrs = Datatypes.pinstrs Lex.bpf_lex lexbuf in *)
   let p =
     Obj.magic
-      (match Parser.pinstrs inf (Lexer.tokens_stream lb) with
-         | Parser.Parser.Inter.Fail_pr ->
+      (match Datatypes.pinstrs inf lexbuf with
+         | Datatypes.Parser.Inter.Fail_pr ->
              (* Theoretically impossible : implies inconsistencies
                 between grammars. *)
                  print_endline "Internal error while parsing"
                  None
-         | Parser.Parser.Inter.Timeout_pr ->
+         | Datatypes.Parser.Inter.Timeout_pr ->
                  print_endline "Timeout while parsing"
                  None
-         | Parser.Parser.Inter.Parsed_pr (ast, _ ) ->
+         | Datatypes.Parser.Inter.Parsed_pr (ast, _ ) ->
                  ast)
   in
   p

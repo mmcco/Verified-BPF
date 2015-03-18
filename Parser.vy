@@ -4,12 +4,12 @@
     Require Import Bpf.
 %}
 
-%token <string> IMM_OP
-%token <string> OFFSET_OP
-%token <string> IMM_BR_OP
-%token <string> BR_OP
-%token <string> SOLO_OP
-%token <string> LEN_OP
+%token <string * nat> IMM_OP
+%token <string * nat> OFFSET_OP
+%token <string * nat * nat * nat> IMM_BR_OP
+%token <string * nat * nat> BR_OP
+%token <string * nat> SOLO_OP
+%token <string * nat> LEN_OP
 
 %token <nat> IMM
 %token <nat> OFFSET

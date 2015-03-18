@@ -26,6 +26,8 @@ all:
 	coqc -I validator -I . ${VAL_FILES} ${BPF_FILES}
 	coqc -I validator -I . extraction.v
 	ocamlc main.mli main.ml
+	ocamlc Datatypes.mli Datatypes.ml
+	ocamlc -I validator -I . Parse.ml
 
 clean:
 	rm -f a.out *.o *.vo *.cmo *.cmx *.cmi *.mli *.automaton \

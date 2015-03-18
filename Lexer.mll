@@ -1,8 +1,42 @@
 {
     open Lexing
+    open Datatypes.Gram
     (*open Parser*)
 
 exception SyntaxError of string
+
+let init filename channel : Lexing.lexbuf =
+
+  push_context := begin fun () -> contexts := []::!contexts end;
+  pop_context := begin fun () ->
+    match !contexts with
+      | [] -> assert false
+      | t::q -> List.iter (Hashtbl.remove lexicon) t;
+                contexts := q
+  end;
+
+ declare_varname := begin fun id ->
+   if Hashtbl.mem lexicon id then begin
+     Hashtbl.add lexicon id (fun loc -> VAR_NAME (id, ref VarId, loc));
+     match !contexts with
+       | [] -> ()
+       | t::q -> contexts := (id::t)::q
+     end
+  end;
+
+  declare_typename := begin fun id ->
+    Hashtbl.add lexicon id (fun loc -> TYPEDEF_NAME (id, ref TypedefId, loc));
+    match !contexts with
+      | [] -> ()
+      | t::q -> contexts := (id::t)::q
+  end;
+
+  !declare_typename "__builtin_va_list";
+
+  let lb = Lexing.from_channel channel in
+  lb.lex_curr_p <-
+    {lb.lex_curr_p with pos_fname = filename; pos_lnum = 1};
+  lb
 
 let next_line lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -129,12 +163,12 @@ let br_op =
 
 rule bpf_lex =
   parse
-  | solo_op { SOLO_OP (Lexing.lexeme lexbuf) }
-  | br_op { BR_OP (Lexing.lexeme lexbuf) }
-  | len_op { LEN_OP (Lexing.lexeme lexbuf) }
-  | imm_op { IMM_OP (Lexing.lexeme lexbuf) }
-  | imm_br_op { IMM_BR_OP (Lexing.lexeme lexbuf) }
-  | offset_op { OFFSET_OP (Lexing.lexeme lexbuf) }
+  | solo_op { SOLO_OP't (Lexing.lexeme lexbuf) }
+  | br_op { BR_OP't (Lexing.lexeme lexbuf) }
+  | len_op { LEN_OP't (Lexing.lexeme lexbuf) }
+  | imm_op { IMM_OP't (Lexing.lexeme lexbuf) }
+  | imm_br_op { IMM_BR_OP't (Lexing.lexeme lexbuf) }
+  | offset_op { OFFSET_OP't (Lexing.lexeme lexbuf) }
 
   (* syntactic sugar *)
   | "<-"  { bpf_lex lexbuf }
@@ -142,21 +176,50 @@ rule bpf_lex =
 
   | num as n   { IMM (int_of_string n) }
 
-  | "P[" (num as n) "]"                 { PKT_ADDR (int_of_string n) }
-  | "P[" (num as n) ':' val_size ']'    { PKT_ADDR (int_of_string n) }
-  | "P[X+" (num as n) ':' val_size ']'  { PKT_ADDR (int_of_string n) }
+  | "P[" (num as n) "]"                 { PKT_ADDR't (int_of_string n) }
+  | "P[" (num as n) ':' val_size ']'    { PKT_ADDR't (int_of_string n) }
+  | "P[X+" (num as n) ':' val_size ']'  { PKT_ADDR't (int_of_string n) }
 
-  | "M[" (num as n) "]"                 { MEM_ADDR (int_of_string n) }
-  | "M[" (num as n) ':' val_size ']'    { MEM_ADDR (int_of_string n) }
-  | "M[X+" (num as n) ':' val_size ']'  { MEM_ADDR (int_of_string n) }
+  | "M[" (num as n) "]"                 { MEM_ADDR't (int_of_string n) }
+  | "M[" (num as n) ':' val_size ']'    { MEM_ADDR't (int_of_string n) }
+  | "M[X+" (num as n) ':' val_size ']'  { MEM_ADDR't (int_of_string n) }
 
   | white             { bpf_lex lexbuf }
   | newline           { next_line lexbuf; NEWLINE }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
   | eof               { EOF }
 
-
 (*
+{
+  open Streams
+  open Specif
+  open Parser
+  open Aut.GramDefs
+
+  let tokens_stream lexbuf : token coq_Stream =
+    let tokens = Queue.create () in
+    let lexer_wraper lexbuf : Pre_parser.token =
+      let res =
+        if lexbuf.lex_curr_p.pos_cnum = lexbuf.lex_curr_p.pos_bol then
+          initial_linebegin lexbuf
+        else
+          initial lexbuf
+      in
+      Queue.push res tokens;
+      res
+    in
+    Pre_parser.translation_unit_file lexer_wraper lexbuf;
+    assert (!contexts = []);
+    let rec compute_token_stream () =
+      let loop t v =
+        Cons (Coq_existT (t, Obj.magic v), Lazy.from_fun compute_token_stream)
+      in
+      match Queue.pop tokens with
+    in
+    Lazy.from_fun compute_token_stream
+
+}
+
 {  
   let main () =
     let cin =
