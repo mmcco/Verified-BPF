@@ -7,56 +7,59 @@ Require Import String.
 Require Import Parser.
 
 Inductive token_ind :=
-    | LD_WORD'tok : token_ind
-    | LD_HALF'tok : token_ind
-    | LD_BYTE'tok : token_ind
-    | LD_OFST_WORD'tok : token_ind
-    | LD_OFST_HALF'tok : token_ind
-    | LDX_BYTE'tok : token_ind
-    | LD_MEM'tok : token_ind
-    | LDX_MEM'tok : token_ind
-    | STORE'tok : token_ind
-    | STORE_X'tok : token_ind
-    | RET_A'tok : token_ind
-    | RET_K'tok : token_ind
-    | X_STORE_A'tok : token_ind
-    | A_STORE_X'tok : token_ind
-    | LDX_HDR_LEN'tok : token_ind
-    | LD_IMM'tok : token_ind
-    | ADD_IMM'tok : token_ind
-    | SUB_IMM'tok : token_ind
-    | MUL_IMM'tok : token_ind
-    | DIV_IMM'tok : token_ind
-    | AND_IMM'tok : token_ind
-    | OR_IMM'tok : token_ind
-    | SL_IMM'tok : token_ind
-    | SR_IMM'tok : token_ind
-    | ADD_X'tok : token_ind
-    | SUB_X'tok : token_ind
-    | MUL_X'tok : token_ind
-    | DIV_X'tok : token_ind
-    | AND_X'tok : token_ind
-    | OR_X'tok : token_ind
-    | SL_X'tok : token_ind
-    | SR_X'tok : token_ind
-    | NEG'tok : token_ind
-    | JMP_IMM'tok : token_ind
-    | LDX_IMM'tok : token_ind
-    | JGT_IMM'tok : token_ind
-    | JGE_IMM'tok : token_ind
-    | JEQ_IMM'tok : token_ind
-    | JAND_IMM'tok : token_ind
-    | LD_LEN'tok : token_ind
-    | LDX_LEN'tok : token_ind
-    | JGT_X'tok : token_ind
-    | JGE_X'tok : token_ind
-    | JEQ_X'tok : token_ind
-    | JAND_X'tok : token_ind
-    | LPAREN'tok : unit -> token_ind
-    | RPAREN'tok : unit -> token_ind
-    | NUM'tok : nat -> token_ind
-    | OP'tok : string -> token_ind
-    | EOF'tok : unit -> token_ind.
+    | LD_WORD'tok
+    | LD_HALF'tok
+    | LD_BYTE'tok
+    | LD_OFST_WORD'tok
+    | LD_OFST_HALF'tok
+    | LDX_BYTE'tok
+    | LD_MEM'tok
+    | LDX_MEM'tok
+    | STORE'tok
+    | STORE_X'tok
+    | RET_A'tok
+    | RET_K'tok
+    | X_STORE_A'tok
+    | A_STORE_X'tok
+    | LDX_HDR_LEN'tok
+    | LD_IMM'tok
+    | ADD_IMM'tok
+    | SUB_IMM'tok
+    | MUL_IMM'tok
+    | DIV_IMM'tok
+    | AND_IMM'tok
+    | OR_IMM'tok
+    | SL_IMM'tok
+    | SR_IMM'tok
+    | ADD_X'tok
+    | SUB_X'tok
+    | MUL_X'tok
+    | DIV_X'tok
+    | AND_X'tok
+    | OR_X'tok
+    | SL_X'tok
+    | SR_X'tok
+    | NEG'tok
+    | JMP_IMM'tok
+    | LDX_IMM'tok
+    | JGT_IMM'tok
+    | JGE_IMM'tok
+    | JEQ_IMM'tok
+    | JAND_IMM'tok
+    | LD_LEN'tok
+    | LDX_LEN'tok
+    | JGT_X'tok
+    | JGE_X'tok
+    | JEQ_X'tok
+    | JAND_X'tok
+
+    | IMM'tok : imm -> token_ind
+    | OFFSET'tok : imm -> token_ind
+    | MEM_ADDR'tok : imm -> token_ind
+    | PKT_ADDR'tok : imm -> token_ind
+
+    | NEWLINE'tok
+    | EOF'tok.
 
 (*
     Helper function to make expressions in get_token more readable.
@@ -69,104 +72,109 @@ Definition get_sst (t : Gram.terminal) (sst : Gram.symbol_semantic_type (Gram.T 
 
 Definition get_token (ti : token_ind) : Aut.GramDefs.token :=
     match ti with
-        | LD_WORD'tok u =>
-            get_sst Gram.LD_WORD'tok u
-        | LD_HALF'tok u =>
-            get_sst Gram.LD_HALF'tok u
-        | LD_BYTE'tok u =>
-            get_sst Gram.LD_BYTE'tok u
-        | LD_OFST_WORD'tok u =>
-            get_sst Gram.LD_OFST_WORD'tok u
-        | LD_OFST_HALF'tok u =>
-            get_sst Gram.LD_OFST_HALF'tok u
-        | LDX_BYTE'tok u =>
-            get_sst Gram.LDX_BYTE'tok u
-        | LD_MEM'tok u =>
-            get_sst Gram.LD_MEM'tok u
-        | LDX_MEM'tok u =>
-            get_sst Gram.LDX_MEM'tok u
-        | STORE'tok u =>
-            get_sst Gram.STORE'tok u
-        | STORE_X'tok u =>
-            get_sst Gram.STORE_X'tok u
-        | RET_A'tok u =>
-            get_sst Gram.RET_A'tok u
-        | RET_K'tok u =>
-            get_sst Gram.RET_K'tok u
-        | X_STORE_A'tok u =>
-            get_sst Gram.X_STORE_A'tok u
-        | A_STORE_X'tok u =>
-            get_sst Gram.A_STORE_X'tok u
-        | LDX_HDR_LEN'tok u =>
-            get_sst Gram.LDX_HDR_LEN'tok u
-        | LD_IMM'tok u =>
-            get_sst Gram.LD_IMM'tok u
-        | ADD_IMM'tok u =>
-            get_sst Gram.ADD_IMM'tok u
-        | SUB_IMM'tok u =>
-            get_sst Gram.SUB_IMM'tok u
-        | MUL_IMM'tok u =>
-            get_sst Gram.MUL_IMM'tok u
-        | DIV_IMM'tok u =>
-            get_sst Gram.DIV_IMM'tok u
-        | AND_IMM'tok u =>
-            get_sst Gram.AND_IMM'tok u
-        | OR_IMM'tok u =>
-            get_sst Gram.OR_IMM'tok u
-        | SL_IMM'tok u =>
-            get_sst Gram.SL_IMM'tok u
-        | SR_IMM'tok u =>
-            get_sst Gram.SR_IMM'tok u
-        | ADD_X'tok u =>
-            get_sst Gram.ADD_X'tok u
-        | SUB_X'tok u =>
-            get_sst Gram.SUB_X'tok u
-        | MUL_X'tok u =>
-            get_sst Gram.MUL_X'tok u
-        | DIV_X'tok u =>
-            get_sst Gram.DIV_X'tok u
-        | AND_X'tok u =>
-            get_sst Gram.AND_X'tok u
-        | OR_X'tok u =>
-            get_sst Gram.OR_X'tok u
-        | SL_X'tok u =>
-            get_sst Gram.SL_X'tok u
-        | SR_X'tok u =>
-            get_sst Gram.SR_X'tok u
-        | NEG'tok u =>
-            get_sst Gram.NEG'tok u
-        | JMP_IMM'tok u =>
-            get_sst Gram.JMP_IMM'tok u
-        | LDX_IMM'tok u =>
-            get_sst Gram.LDX_IMM'tok u
-        | JGT_IMM'tok u =>
-            get_sst Gram.JGT_IMM'tok u
-        | JGE_IMM'tok u =>
-            get_sst Gram.JGE_IMM'tok u
-        | JEQ_IMM'tok u =>
-            get_sst Gram.JEQ_IMM'tok u
-        | JAND_IMM'tok u =>
-            get_sst Gram.JAND_IMM'tok u
-        | LD_LEN'tok u =>
-            get_sst Gram.LD_LEN'tok u
-        | LDX_LEN'tok u =>
-            get_sst Gram.LDX_LEN'tok u
-        | JGT_X'tok u =>
-            get_sst Gram.JGT_X'tok u
-        | JGE_X'tok u =>
-            get_sst Gram.JGE_X'tok u
-        | JEQ_X'tok u =>
-            get_sst Gram.JEQ_X'tok u
-        | JAND_X'tok u =>
-            get_sst Gram.JAND_X'tok u
-        | LPAREN'tok u =>
-            get_sst Gram.LPAREN't tt
-        | RPAREN'tok u =>
-            get_sst Gram.RPAREN't tt
-        | NUM'tok n =>
-            get_sst Gram.NUM't n
-        | OP'tok str =>
-            get_sst Gram.OP't str
-        | EOF'tok u =>
+        | LD_WORD'tok =>
+            get_sst Gram.LD_WORD't tt
+        | LD_HALF'tok =>
+            get_sst Gram.LD_HALF't tt
+        | LD_BYTE'tok =>
+            get_sst Gram.LD_BYTE't tt
+        | LD_OFST_WORD'tok =>
+            get_sst Gram.LD_OFST_WORD't tt
+        | LD_OFST_HALF'tok =>
+            get_sst Gram.LD_OFST_HALF't tt
+        | LDX_BYTE'tok =>
+            get_sst Gram.LDX_BYTE't tt
+        | LD_MEM'tok =>
+            get_sst Gram.LD_MEM't tt
+        | LDX_MEM'tok =>
+            get_sst Gram.LDX_MEM't tt
+        | STORE'tok =>
+            get_sst Gram.STORE't tt
+        | STORE_X'tok =>
+            get_sst Gram.STORE_X't tt
+        | RET_A'tok =>
+            get_sst Gram.RET_A't tt
+        | RET_K'tok =>
+            get_sst Gram.RET_K't tt
+        | X_STORE_A'tok =>
+            get_sst Gram.X_STORE_A't tt
+        | A_STORE_X'tok =>
+            get_sst Gram.A_STORE_X't tt
+        | LDX_HDR_LEN'tok =>
+            get_sst Gram.LDX_HDR_LEN't tt
+        | LD_IMM'tok =>
+            get_sst Gram.LD_IMM't tt
+        | ADD_IMM'tok =>
+            get_sst Gram.ADD_IMM't tt
+        | SUB_IMM'tok =>
+            get_sst Gram.SUB_IMM't tt
+        | MUL_IMM'tok =>
+            get_sst Gram.MUL_IMM't tt
+        | DIV_IMM'tok =>
+            get_sst Gram.DIV_IMM't tt
+        | AND_IMM'tok =>
+            get_sst Gram.AND_IMM't tt
+        | OR_IMM'tok =>
+            get_sst Gram.OR_IMM't tt
+        | SL_IMM'tok =>
+            get_sst Gram.SL_IMM't tt
+        | SR_IMM'tok =>
+            get_sst Gram.SR_IMM't tt
+        | ADD_X'tok =>
+            get_sst Gram.ADD_X't tt
+        | SUB_X'tok =>
+            get_sst Gram.SUB_X't tt
+        | MUL_X'tok =>
+            get_sst Gram.MUL_X't tt
+        | DIV_X'tok =>
+            get_sst Gram.DIV_X't tt
+        | AND_X'tok =>
+            get_sst Gram.AND_X't tt
+        | OR_X'tok =>
+            get_sst Gram.OR_X't tt
+        | SL_X'tok =>
+            get_sst Gram.SL_X't tt
+        | SR_X'tok =>
+            get_sst Gram.SR_X't tt
+        | NEG'tok =>
+            get_sst Gram.NEG't tt
+        | JMP_IMM'tok =>
+            get_sst Gram.JMP_IMM't tt
+        | LDX_IMM'tok =>
+            get_sst Gram.LDX_IMM't tt
+        | JGT_IMM'tok =>
+            get_sst Gram.JGT_IMM't tt
+        | JGE_IMM'tok =>
+            get_sst Gram.JGE_IMM't tt
+        | JEQ_IMM'tok =>
+            get_sst Gram.JEQ_IMM't tt
+        | JAND_IMM'tok =>
+            get_sst Gram.JAND_IMM't tt
+        | LD_LEN'tok =>
+            get_sst Gram.LD_LEN't tt
+        | LDX_LEN'tok =>
+            get_sst Gram.LDX_LEN't tt
+        | JGT_X'tok =>
+            get_sst Gram.JGT_X't tt
+        | JGE_X'tok =>
+            get_sst Gram.JGE_X't tt
+        | JEQ_X'tok =>
+            get_sst Gram.JEQ_X't tt
+        | JAND_X'tok =>
+            get_sst Gram.JAND_X't tt
+
+
+        | IMM'tok i =>
+            get_sst Gram.IMM't i
+        | OFFSET'tok i =>
+            get_sst Gram.OFFSET't i
+        | MEM_ADDR'tok i =>
+            get_sst Gram.MEM_ADDR't i
+        | PKT_ADDR'tok i =>
+            get_sst Gram.PKT_ADDR't i
+
+        | NEWLINE'tok =>
+            get_sst Gram.NEWLINE't tt
+        | EOF'tok =>
             get_sst Gram.EOF't tt
     end.

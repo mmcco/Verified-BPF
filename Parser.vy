@@ -6,14 +6,72 @@ Definition imm : Type := nat % type.
 Definition pkt_ofst : Type := nat % type.
 Definition mem_ofst : Type := nat % type.
 Definition offset : Type := nat % type.
+Parameter terminal : Type.
+
+Inductive solo_op :=
+    | RetA
+    | RetK
+    | XStoreA
+    | AStoreX
+    | LdXHdrLen
+    | LdLen
+    | LdXLen.
+
+Inductive imm_op :=
+    | LdImm
+    | AddImm
+    | SubImm
+    | MulImm
+    | DivImm
+    | AndImm
+    | OrImm
+    | SLImm
+    | SRImm
+    | AddX
+    | SubX
+    | MulX
+    | DivX
+    | AndX
+    | OrX
+    | SLX
+    | SRX
+    | Neg
+    | JmpImm
+    | LdXImm.
+
+Inductive mem_op :=
+    | LdMem
+    | LdXMem
+    | Store
+    | StoreX.
+
+Inductive pkt_op :=
+    | LdWord
+    | LdHalf
+    | LdByte
+    | LdOfstWord
+    | LdOfstHalf
+    | LdXByte.
+
+Inductive br_op :=
+    | JGTX
+    | JGEX
+    | JEqX
+    | JAndX.
+
+Inductive imm_br_op :=
+    | JGTImm
+    | JGEImm
+    | JEqImm
+    | JAndImm.
 
 Inductive instr :=
-    | SoloOp : instr
-    | ImmOp : token -> imm -> instr
-    | MemOp : token -> mem_ofst -> instr
-    | PktOp : token -> pkt_ofst -> instr
-    | BrOp : offset -> offset -> instr
-    | ImmBrOp : imm -> offset -> offset -> instr.
+    | SoloInstr : solo_op -> instr
+    | ImmInstr : imm_op -> imm -> instr
+    | MemInstr : mem_op -> mem_ofst -> instr
+    | PktInstr : pkt_op -> pkt_ofst -> instr
+    | BrInstr : br_op -> offset -> offset -> instr
+    | ImmBrInstr : imm_br_op -> imm -> offset -> offset -> instr.
 
 %}
 
@@ -69,12 +127,13 @@ Inductive instr :=
 %token NEWLINE EOF
 
 %type <instr> pinstr
-%type <token> solo_op
-%type <token> imm_op
-%type <token> br_op
-%type <token> pkt_op
-%type <token> mem_op
-%type <token> imm_br_op
+
+%type <solo_op> solo_op
+%type <imm_op> imm_op
+%type <br_op> br_op
+%type <pkt_op> pkt_op
+%type <mem_op> mem_op
+%type <imm_br_op> imm_br_op
 
 %start <list instr> pinstrs
 %%
@@ -89,117 +148,116 @@ pinstrs:
 
 pinstr: 
     | opcode=solo_op
-      { SoloOp opcode }
+      { SoloInstr opcode }
     | opcode=imm_op i=IMM
-      { ImmOp opcode i }
+      { ImmInstr opcode i }
     | opcode=br_op b1=OFFSET b2=OFFSET
-      { BrOp opcode b1 b2 }
+      { BrInstr opcode b1 b2 }
     | opcode=pkt_op po=PKT_ADDR
-      { PktOp po }
+      { PktInstr opcode po }
     | opcode=mem_op mo=MEM_ADDR
-      { MemOp mo }
+      { MemInstr opcode mo }
     | opcode=imm_br_op i=IMM b1=OFFSET b2=OFFSET
-      { ImmBrOp i b1 b2 }
+      { ImmBrInstr opcode i b1 b2 }
 
 pkt_op:
     | LD_WORD
-      { LD_WORD }
+      { LdWord }
     | LD_HALF
-      { LD_HALF }
+      { LdHalf }
     | LD_BYTE
-      { LD_BYTE }
+      { LdByte }
     | LD_OFST_WORD
-      { LD_OFST_WORD }
+      { LdOfstWord }
     | LD_OFST_HALF
-      { LD_OFST_HALF }
+      { LdOfstHalf }
     | LDX_BYTE
-      { LDX_BYTE }
+      { LdXByte }
 
 mem_op:
     | LD_MEM
-      { LD_MEM }
+      { LdMem }
     | LDX_MEM
-      { LDX_MEM }
+      { LdXMem }
     | STORE
-      { STORE }
+      { Store }
     | STORE_X
-      { STORE_X }
+      { StoreX }
 
 solo_op:
     | RET_A
-      { RET_A }
+      { RetA }
     | RET_K
-      { RET_K }
+      { RetK }
     | X_STORE_A
-      { X_STORE_A }
+      { XStoreA }
     | A_STORE_X
-      { A_STORE_X }
+      { AStoreX }
     | LDX_HDR_LEN
-      { LDX_HDR_LEN }
+      { LdXHdrLen }
     | LD_LEN
-      { LD_LEN }
+      { LdLen }
     | LDX_LEN
-      { LDX_LEN }
+      { LdXLen }
 
 imm_op:
     | LD_IMM
-      { LD_IMM }
+      { LdImm }
     | ADD_IMM
-      { ADD_IMM }
+      { AddImm }
     | SUB_IMM
-      { SUB_IMM }
+      { SubImm }
     | MUL_IMM
-      { MUL_IMM }
+      { MulImm }
     | DIV_IMM
-      { DIV_IMM }
+      { DivImm }
     | AND_IMM
-      { AND_IMM }
+      { AndImm }
     | OR_IMM
-      { OR_IMM }
+      { OrImm }
     | SL_IMM
-      { SL_IMM }
+      { SLImm }
     | SR_IMM
-      { SR_IMM }
+      { SRImm }
     | ADD_X
-      { ADD_X }
+      { AddX }
     | SUB_X
-      { SUB_X }
+      { SubX }
     | MUL_X
-      { MUL_X }
+      { MulX }
     | DIV_X
-      { DIV_X }
+      { DivX }
     | AND_X
-      { AND_X }
+      { AndX }
     | OR_X
-      { OR_X }
+      { OrX }
     | SL_X
-      { SL_X }
+      { SLX }
     | SR_X
-      { SR_X }
+      { SRX }
     | NEG
-      { NEG }
+      { Neg }
     | JMP_IMM
-      { JMP_IMM }
+      { JmpImm }
     | LDX_IMM
-      { LDX_IMM }
+      { LdXImm }
 
 imm_br_op:
     | JGT_IMM
-      { JGT_IMM }
+      { JGTImm }
     | JGE_IMM
-      { JGE_IMM }
+      { JGEImm }
     | JEQ_IMM
-      { JEQ_IMM }
+      { JEqImm }
     | JAND_IMM
-      { JAND_IMM }
+      { JAndImm }
   
-
 br_op:
     | JGT_X
-      { JGT_X }
+      { JGTX }
     | JGE_X
-      { JGE_X }
+      { JGEX }
     | JEQ_X
-      { JEQ_X }
+      { JEqX }
     | JAND_X
-      { JAND_X }
+      { JAndX }
