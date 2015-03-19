@@ -188,3 +188,13 @@ rule lex = parse
 
   | _
     { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
+
+{
+    let tokens_stream lexbuf : token stream =
+        let rec compute_token_stream () =
+            let loop c_exist =
+                Cons (c_exist, Lazy.from_fun compute_token_stream)
+            in loop (lex lexbuf)
+        in
+        Lazy.from_fun compute_token_stream
+}
