@@ -10,26 +10,32 @@ VAL_FILES=validator/Alphabet.v \
 	validator/Interpreter_safe.v \
 	validator/Main.v
 
-BPF_FILES=Bpf.v Parser.v
+COQ_DIRS=-I . -I validator -I includes
 
 all:
-	ocamlc -c bpf.ml
-	#menhir --infer -v parser.mly
-	menhir --coq -v Parser.vy
-	#ocamlc -c parser.mli
-	#ocamlc -c parser.ml
+	coqc -I validator ${VAL_FILES}
+	ocamlc -c includes/Specif.mli
+	ocamlc -I includes -c includes/Specif.ml
+	ocamlc -c includes/Streams.mli
+	ocamlc -I includes -c includes/Streams.ml
+	${MAKE} incr
+
+incr:
 	ocamllex Lexer.mll
-	#ocamlc -c Lexer.ml
-	#coqc -I validator validator/Alphabet.v validator/Tuples.v \
-		validator/Grammar.v validator/Automaton.v validator/Main.v
-	
-	coqc -I validator -I . ${VAL_FILES} ${BPF_FILES}
-	coqc -I validator -I . extraction.v
-	ocamlc main.mli main.ml
-	ocamlc Datatypes.mli Datatypes.ml
-	ocamlc -I validator -I . Parse.ml
+	menhir --coq Parser.vy
+	coqc ${COQ_DIRS} Parser.v
+	coqc ${COQ_DIRS} Datatypes.v
+	coqc ${COQ_DIRS} Extract.v
+	ocamlc -c Parser.mli
+	ocamlfind ocamlc -package batteries -I includes -c Lexer.ml
+	ocamlc -c Parser.ml
+	ocamlc -c Main.mli
+	ocamlc -c Main.ml
+	ocamlfind ocamlc -package batteries -linkpkg \
+		Parser.cmo Lexer.cmo run.ml
 
 clean:
-	rm -f a.out *.o *.vo *.cmo *.cmx *.cmi *.mli *.automaton \
-		*.glob Lexer.ml Parser.ml Parser.v validator/*.vo \
-		validator/*.glob
+	rm -f *.glob *.cmi *.cmo a.out *.vo Parser.ml Lexer.ml \
+		Parser.v validator/*.vo validator/*.glob Main.ml \
+		Main.mli Parser.mli Lexer.mli includes/*.cmo \
+		includes/*.cmi
