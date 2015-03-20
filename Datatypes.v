@@ -5,6 +5,7 @@
 
 Require Import String.
 Require Import Parser.
+Require Import Word.
 
 Inductive token_ind :=
     | LD_WORD'tok
@@ -53,10 +54,9 @@ Inductive token_ind :=
     | JEQ_X'tok
     | JAND_X'tok
 
-    | IMM'tok : imm -> token_ind
-    | OFFSET'tok : imm -> token_ind
-    | MEM_ADDR'tok : imm -> token_ind
-    | PKT_ADDR'tok : imm -> token_ind
+    | NUM'tok : nat -> token_ind
+    | MEM_ADDR'tok : nat -> token_ind
+    | PKT_ADDR'tok : nat -> token_ind
 
     | NEWLINE'tok
     | EOF'tok.
@@ -164,10 +164,8 @@ Definition get_token (ti : token_ind) : Aut.GramDefs.token :=
             get_sst Gram.JAND_X't tt
 
 
-        | IMM'tok i =>
-            get_sst Gram.IMM't i
-        | OFFSET'tok i =>
-            get_sst Gram.OFFSET't i
+        | NUM'tok i =>
+            get_sst Gram.NUM't i
         | MEM_ADDR'tok i =>
             get_sst Gram.MEM_ADDR't i
         | PKT_ADDR'tok i =>

@@ -10,11 +10,11 @@ VAL_FILES=validator/Alphabet.v \
 	validator/Interpreter_safe.v \
 	validator/Main.v
 
-COQ_DIRS=-I . -I validator -I includes
+COQ_DIRS=-I . -I validator -I includes -I bedrock
 
 all:
 	coqc bedrock/Nomega.v
-	coqc bedrock/Word.v
+	coqc -I bedrock bedrock/Word.v
 	coqc -I validator ${VAL_FILES}
 	ocamlc -c includes/Specif.mli
 	ocamlc -I includes -c includes/Specif.ml
@@ -29,6 +29,8 @@ incr:
 	coqc ${COQ_DIRS} Datatypes.v
 	coqc ${COQ_DIRS} Analysis.v
 	coqc ${COQ_DIRS} Extract.v
+	#ocamlc -c Word.mli
+	#ocamlc -c Word.ml
 	ocamlc -c Parser.mli
 	ocamlfind ocamlc -package batteries -I includes -c Lexer.ml
 	ocamlc -c Parser.ml
@@ -40,5 +42,5 @@ incr:
 clean:
 	rm -f *.glob *.cmi *.cmo a.out *.vo Parser.ml Lexer.ml \
 		Parser.v validator/*.{glob,vo} Main.ml \
-		Main.mli Parser.mli Lexer.mli \
+		Main.mli Parser.mli Lexer.mli Word.ml \
 		includes/*.cm{o,i} bedrock/*.{glob,vo}

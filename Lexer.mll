@@ -3,15 +3,13 @@
     open Printf
     open Specif
     open Parser
-    (*open Main*)
     open Aut.GramDefs
-    (*open Streams*)
     open BatString
     open String
 
     exception SyntaxError of string
 
-    let rec of_int (n: int) : imm =
+    let rec of_int (n: int) : nat =
         assert (n >= 0);
         if n = 0 then O else S (of_int (pred n))
 
@@ -41,6 +39,9 @@ rule lex = parse
     { get_token (MEM_ADDR'tok (to_num n)) }
   | "M[X+" (num as n) ':' val_size ']'
     { get_token (MEM_ADDR'tok (to_num n)) }
+
+  | num as n
+    { get_token (NUM'tok (to_num n)) }
 
   | newline
     { get_token NEWLINE'tok }

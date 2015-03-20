@@ -1,11 +1,12 @@
 %{
 
 Require Import String.
+Require Import Word.
 
-Definition imm : Type := nat % type.
-Definition pkt_ofst : Type := nat % type.
-Definition mem_ofst : Type := nat % type.
-Definition offset : Type := nat % type.
+Definition imm : Type := word 32 % type.
+Definition pkt_addr : Type := word 32 % type.
+Definition mem_addr : Type := word 32 % type.
+Definition offset : Type := word 8 % type.
 Parameter terminal : Type.
 
 Inductive solo_op :=
@@ -68,8 +69,8 @@ Inductive imm_br_op :=
 Inductive instr :=
     | SoloInstr : solo_op -> instr
     | ImmInstr : imm_op -> imm -> instr
-    | MemInstr : mem_op -> mem_ofst -> instr
-    | PktInstr : pkt_op -> pkt_ofst -> instr
+    | MemInstr : mem_op -> mem_addr -> instr
+    | PktInstr : pkt_op -> pkt_addr -> instr
     | BrInstr : br_op -> offset -> offset -> instr
     | ImmBrInstr : imm_br_op -> imm -> offset -> offset -> instr.
 
@@ -123,7 +124,10 @@ Inductive instr :=
 %token JEQ_X
 %token JAND_X
 
-%token <imm> IMM OFFSET MEM_ADDR PKT_ADDR
+(* Represents both immediates and branch offsets *)
+%token <nat> NUM
+%token <nat> MEM_ADDR
+%token <nat> PKT_ADDR
 %token NEWLINE EOF
 
 %type <instr> pinstr
@@ -149,16 +153,16 @@ pinstrs:
 pinstr: 
     | opcode=solo_op
       { SoloInstr opcode }
-    | opcode=imm_op i=IMM
-      { ImmInstr opcode i }
-    | opcode=br_op b1=OFFSET b2=OFFSET
-      { BrInstr opcode b1 b2 }
+    | opcode=imm_op i=NUM
+      { ImmInstr opcode (natToWord 32 i) }
+    | opcode=br_op b1=NUM b2=NUM
+      { BrInstr opcode (natToWord 8 b1) (natToWord 8 b2) }
     | opcode=pkt_op po=PKT_ADDR
-      { PktInstr opcode po }
+      { PktInstr opcode (natToWord 32 po) }
     | opcode=mem_op mo=MEM_ADDR
-      { MemInstr opcode mo }
-    | opcode=imm_br_op i=IMM b1=OFFSET b2=OFFSET
-      { ImmBrInstr opcode i b1 b2 }
+      { MemInstr opcode (natToWord 32 mo) }
+    | opcode=imm_br_op i=NUM b1=NUM b2=NUM
+      { ImmBrInstr opcode (natToWord 32 i) (natToWord 8 b1) (natToWord 8 b2) }
 
 pkt_op:
     | LD_WORD
