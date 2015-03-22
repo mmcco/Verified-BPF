@@ -43,6 +43,8 @@ rule lex = parse
   | num as n
     { get_token (NUM'tok (to_num n)) }
 
+  | whitespace
+    { lex lexbuf }
   | newline
     { get_token NEWLINE'tok }
   | eof

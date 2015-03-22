@@ -1,9 +1,12 @@
-Require Import Parser.
-Require Import Datatypes.
 Require Import List.
 Require Import Div2.
-Require Import Word.
 Require Import Bool.
+
+Require Import Word.
+Require Import Parser.
+Require Import Datatypes.
+Require IL.
+Require NatMap.
 
 (*
      "Each instruction performs some action on the pseudo-machine state, which
@@ -18,7 +21,8 @@ Record state : Type := make_state {
     next_instrs : list instr;
     acc : imm;
     x_reg : imm;
-    mem : list imm
+    pkt : list imm;
+    smem : list imm
 }.
 
 Definition step (s : state) : option state :=
@@ -139,3 +143,9 @@ Definition step (s : state) : option state :=
 
 Definition word_aligned sz (w : word sz) : bool :=
     (negb (mod2 (wordToNat w))) && (negb (mod2 (div2 (wordToNat w)))).
+
+(*
+Parameter mike_m : mem.
+Parameter mike_a : addr.
+Eval compute in (mem_get mike_m) mike_a.
+*)

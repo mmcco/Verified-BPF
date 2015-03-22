@@ -13,9 +13,26 @@ VAL_FILES=validator/Alphabet.v \
 COQ_DIRS=-I . -I validator -I includes -I bedrock
 
 all:
+	# necessary Bedrock libraries
+	coqc bedrock/Labels.v
 	coqc bedrock/Nomega.v
+	coqc bedrock/Reflection.v
+	coqc bedrock/EqdepClass.v
+	coqc bedrock/PropX.v
+	coqc -I bedrock bedrock/NatMap.v
 	coqc -I bedrock bedrock/Word.v
+	coqc -I bedrock bedrock/Memory.v
+	coqc -I bedrock bedrock/Decidables.v
+	coqc -I bedrock bedrock/DepList.v
+	coqc -I bedrock bedrock/Heaps.v
+	coqc -I bedrock bedrock/PropXTac.v
+	coqc -I bedrock bedrock/IL.v
+	coqc -I bedrock bedrock/SepTheoryX.v
+	coqc -I bedrock bedrock/SepTheoryXIL.v
+	coqc -I bedrock bedrock/SepIL.v
+	# the CompCert parser validator
 	coqc -I validator ${VAL_FILES}
+	# includes from other parts of CompCert
 	ocamlc -c includes/Specif.mli
 	ocamlc -I includes -c includes/Specif.ml
 	ocamlc -c includes/Streams.mli
@@ -43,4 +60,5 @@ clean:
 	rm -f *.glob *.cmi *.cmo a.out *.vo Parser.ml Lexer.ml \
 		Parser.v validator/*.{glob,vo} Main.ml \
 		Main.mli Parser.mli Lexer.mli Word.ml \
-		includes/*.cm{o,i} bedrock/*.{glob,vo}
+		includes/*.cm{o,i} bedrock/*.{glob,vo} \
+		Analysis.ml{,i}

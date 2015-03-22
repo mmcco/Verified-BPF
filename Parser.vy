@@ -2,6 +2,7 @@
 
 Require Import String.
 Require Import Word.
+Require Import Memory.
 
 Definition imm : Type := word 32 % type.
 Definition pkt_addr : Type := word 32 % type.
