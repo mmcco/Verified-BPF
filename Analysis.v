@@ -31,6 +31,30 @@ Record vm_state : Type := make_state {
     smem : scratch_mem
 }.
 
+Let mike := empty_mem.
+Require Vectors.Fin.
+
+Definition get_fin (i:nat) : option (Vectors.Fin.t 16) :=
+    match Vectors.Fin.of_nat i 16 with
+        | inleft x => Some x
+        | _ => None
+    end.
+
+
+Definition change_acc (vms:vm_state) (new_acc:option imm) :=
+    make_state new_acc (x_reg vms) (pkt vms) (smem vms).
+
+Definition change_x_reg (vms:vm_state) (new_x:option imm) :=
+    make_state (acc vms) new_x (pkt vms) (smem vms).
+
+Definition change_smem (vms:vm_state) (i:nat) (v:Word.word 32) : option vm_state :=
+    match get_fin i with
+        | Some fin =>
+            let new_mem := Vector.replace (smem vms) fin (Some v) in
+            Some (make_state (acc vms) (x_reg vms) (pkt vms) new_mem)
+        | None => None
+    end.
+
 Inductive end_state : Type :=
     | Ret : Word.word 32 -> end_state
     | Error : string -> end_state.
