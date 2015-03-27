@@ -54,15 +54,15 @@ incr:
 	coqc ${COQ_DIRS} -R bedrock/src/ Bedrock Datatypes.v
 	coqc ${COQ_DIRS} -R bedrock/src/ Bedrock Analysis.v
 	coqc ${COQ_DIRS} -R bedrock/src/ Bedrock Extract.v
-	#ocamlc -c Word.mli
-	#ocamlc -c Word.ml
 	ocamlc -c Parser.mli
 	ocamlfind ocamlc -package batteries -I includes -c Lexer.ml
 	ocamlc -c Parser.ml
 	ocamlc -c Main.mli
 	ocamlc -c Main.ml
+	ocamlc -c Analysis.mli
+	ocamlc -c Analysis.ml
 	ocamlfind ocamlc -package batteries -linkpkg \
-		Parser.cmo Lexer.cmo run.ml
+		Analysis.cmo Parser.cmo Lexer.cmo run.ml
 
 clean:
 	rm -f *.glob *.cmi *.cmo a.out *.vo Parser.ml Lexer.ml \

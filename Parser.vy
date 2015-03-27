@@ -12,7 +12,6 @@ Parameter terminal : Type.
 
 Inductive solo_op :=
     | RetA
-    | RetK
     | XStoreA
     | AStoreX
     | LdXHdrLen
@@ -20,6 +19,7 @@ Inductive solo_op :=
     | LdXLen.
 
 Inductive imm_op :=
+    | RetK
     | LdImm
     | AddImm
     | SubImm
@@ -192,8 +192,6 @@ mem_op:
 solo_op:
     | RET_A
       { RetA }
-    | RET_K
-      { RetK }
     | X_STORE_A
       { XStoreA }
     | A_STORE_X
@@ -206,6 +204,8 @@ solo_op:
       { LdXLen }
 
 imm_op:
+    | RET_K
+      { RetK }
     | LD_IMM
       { LdImm }
     | ADD_IMM

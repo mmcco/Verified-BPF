@@ -24,7 +24,6 @@ Definition empty_mem : scratch_mem :=
     Vector.const (None : option (Word.word 32)) 16.
 
 Record vm_state : Type := make_state {
-    curr_instr : instr;
     (* Future instructions kept separate for ease of Fixpoint defs *)
     acc : option imm;
     x_reg : option imm;
@@ -40,24 +39,20 @@ Inductive state : Type :=
     | ContState : vm_state -> state
     | End : end_state -> state.
 
-Definition init_state (ins : list instr) : state :=
-    match hd_error ins with
-        | None =>
-            End (Error "empty instruction list")
-        | Some i =>
-            ContState (make_state i None None empty_mem empty_mem)
-    end.
+Definition init_state : state :=
+            ContState (make_state None None empty_mem empty_mem).
 
 
 
-Definition step (s : vm_state) : state * nat :=
-    match curr_instr s with
+Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
+    match i with
         | SoloInstr s_op =>
             match s_op with
                 | RetA =>
-                    (End (Error "*** fill in ***"), 1)
-                | RetK =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | None => (End (Error "Returned uninitialized acc"), 1)
+                        | Some v => (End (Ret v), 1)
+                    end
                 | XStoreA =>
                     (End (Error "*** fill in ***"), 1)
                 | AStoreX =>
@@ -71,6 +66,8 @@ Definition step (s : vm_state) : state * nat :=
             end
         | ImmInstr i_op i =>
             match i_op with
+                | RetK =>
+                    (End (Error "*** fill in ***"), 1)
                 | LdImm =>
                     (End (Error "*** fill in ***"), 1)
                 | AddImm =>
@@ -164,20 +161,24 @@ Definition step (s : vm_state) : state * nat :=
 
 
 Fixpoint prog_eval (ins:list instr) (s:state) (steps:nat) : end_state :=
-    match ins with
-        | next_i :: rest =>
-            match steps with
-                | 0 => Error "step size of zero"
-                | 1 =>
-                    match s with
-                        | ContState vms => let (vms', s_sz) := step vms in
-                            prog_eval rest vms' s_sz
-                        | End end_s => end_s
-                    end
-                | S n' => prog_eval rest s n'
+    match s with
+        | End (e_s) => e_s
+        | ContState vms =>
+            match ins with
+                | next_i :: rest =>
+                    match steps with
+                    | 0 => Error "step size of zero"
+                    | 1 =>
+                        match s with
+                            | ContState vms =>
+                                let (vms', s_sz) := step vms next_i rest in
+                                prog_eval rest vms' s_sz
+                            | End end_s => end_s
+                        end
+                    | S n' => prog_eval rest s n'
+                end
+                | [] => Error "empty instr list, never reached a return"
             end
-        | [] =>
-            Error "empty instr list, never reached a return"
     end.
 
 (* Used to prove that offsets stay on word (and hence instruction)

@@ -10,5 +10,4 @@ Extraction Language Ocaml.
 
 Extraction "Main.ml" Main.Make.
 Extraction "Parser.ml" Parser.pinstrs Datatypes.get_token.
-Extraction "Analysis.ml" Analysis.state.
-(*Extraction "Word.ml" Word.wordToNat Word.natToWord.*)
+Extraction "Analysis.ml" Analysis.state Analysis.prog_eval Analysis.init_state.

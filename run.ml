@@ -15,10 +15,14 @@ let _ =
     in
     let lexbuf = Lexing.from_channel cin in
     (match pinstrs inf (Lexer.tokens_stream lexbuf) with
-        | Fail_pr ->
-                print_endline "failed!"
-        | Timeout_pr ->
-                print_endline "timed out!"
-        | Parsed_pr (output, _) ->
-                print_endline "worked!")
-
+      | Fail_pr ->
+              print_endline "parser failed!"
+      | Timeout_pr ->
+              print_endline "parser timed out!"
+      | Parsed_pr (output, _) ->
+          let ins : Analysis.instr list = Obj.magic output in
+          (match Analysis.prog_eval ins Analysis.init_state (S O) with
+            | Ret w ->
+                    print_endline "runtime success!"
+            | Error chars ->
+                    print_endline (BatString.of_list chars)))
