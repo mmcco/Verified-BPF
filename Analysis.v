@@ -67,7 +67,7 @@ Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
         | ImmInstr i_op i =>
             match i_op with
                 | RetK =>
-                    (End (Error "*** fill in ***"), 1)
+                    (End (Ret i), 1)
                 | LdImm =>
                     (End (Error "*** fill in ***"), 1)
                 | AddImm =>
