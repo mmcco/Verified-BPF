@@ -162,106 +162,28 @@ Definition step (s : vm_state) : state * nat :=
             end
     end.
 
-(*
-Fixpoint beq_nat (n m : nat) : bool :=
-  match n with
-  | O => match m with
-         | O => true
-         | S m' => false
-         end
-  | S n' => match m with
-            | O => false
-            | S m' => beq_nat n' m'
-            end
-  end.
 
-Definition beq_nat 
-
-Variable A : Type.
-Require Import Bool.
-Theorem not_zero : forall (n:nat), beq_nat (S n) 0 = false.
-simpl. reflexivity. Qed.
-
-Theorem skipn_dec : forall (n:nat) (l:list A), gt (length l) 0 -> lt (length (skipn (S n) l)) (length l).
-Proof.
-rewrite -> not_zero.
-simpl.
-intuition.
-rewrite -> not_zero.
-Qed.
-
-Variable A : Type.
-
-Definition lte (a b : nat) := or (lt a b) (eq a b).
-
-Lemma ref : forall (n:nat), eq n n.
-reflexivity.
-Qed.
-
-Lemma refl : forall (n:nat), lte n n.
-destruct n as [| n']. rewrite -> ref. reflexivity.
-Qed.
-
-Theorem skipn_dec : forall (n:nat) (l:list A), lte (length (skipn n l)) (length l).
-
-destruct n as [| n']. simpl. rewrite -> lte. reflexivity.*)
-
-Lemma skipn_dec : forall A (n:nat) (l:list A), length l >= length (skipn n l).
-Proof.
-intros A n l.
-induction l as [| hd tl].
-intro Hn.
-
-
-simpl.
-destruct n as [| n'].
-simpl.
-intuition.
-intuition.
-rewrite hi.
-
-intuition.
-destruct n as [| n'].
-simpl.
-intuition.
-simpl.
-case [].
-induction l.
-reflexivity.
-induction l.
-simpl.
-reflexivity.
-Qed.
-
-
-Fixpoint prog_eval (ins : list instr) (s : state) : end_state :=
+Fixpoint prog_eval (ins:list instr) (s:state) (steps:nat) : end_state :=
     match ins with
         | next_i :: rest =>
-            match s with
-            | ContState vms =>
-                match step vms with
-                    | (_, 0) => Error "step size of zero"
-                    | (vms', step_size) => prog_eval rest vms'
-                end
-            | End end_s => end_s
+            match steps with
+                | 0 => Error "step size of zero"
+                | 1 =>
+                    match s with
+                        | ContState vms => let (vms', s_sz) := step vms in
+                            prog_eval rest vms' s_sz
+                        | End end_s => end_s
+                    end
+                | S n' => prog_eval rest s n'
             end
         | [] =>
             Error "empty instr list, never reached a return"
     end.
-(*
-    match s with
-        | ContState vms =>
-            match step vms with
-                | (_, 0) => Error "step size of zero"
-                | (vms', step_size) => prog_eval (skipn step_size ins) vms'
-            end
-        | End end_s =>
-            end_s
-    end.*)
 
 (* Used to prove that offsets stay on word (and hence instruction)
    boundaries.
 *)
 
-Definition word_aligned sz (w : word sz) : bool :=
-    (negb (mod2 (wordToNat w))) && (negb (mod2 (div2 (wordToNat w)))).
+Definition word_aligned sz (w : Word.word sz) : bool :=
+    let n := Word.wordToNat w in
+        (negb (Word.mod2 n)) && (negb (Word.mod2 (div2 n))).
