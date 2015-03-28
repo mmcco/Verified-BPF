@@ -3,10 +3,11 @@ Require Import Div2.
 Require Import Bool.
 Require Import List.
 Require Vector.
+Require Vectors.Fin.
 
 Import ListNotations.
 
-Require Word.
+Require Import Word.
 Require Import Parser.
 
 
@@ -27,12 +28,9 @@ Record vm_state : Type := make_state {
     (* Future instructions kept separate for ease of Fixpoint defs *)
     acc : option imm;
     x_reg : option imm;
-    pkt : scratch_mem;
+    pkt : list (Word.word 32);
     smem : scratch_mem
 }.
-
-Let mike := empty_mem.
-Require Vectors.Fin.
 
 Definition get_fin (i:nat) : option (Vectors.Fin.t 16) :=
     match Vectors.Fin.of_nat i 16 with
@@ -41,11 +39,11 @@ Definition get_fin (i:nat) : option (Vectors.Fin.t 16) :=
     end.
 
 
-Definition change_acc (vms:vm_state) (new_acc:option imm) :=
-    make_state new_acc (x_reg vms) (pkt vms) (smem vms).
+Definition change_acc (vms:vm_state) (new_acc:imm) :=
+    make_state (Some new_acc) (x_reg vms) (pkt vms) (smem vms).
 
-Definition change_x_reg (vms:vm_state) (new_x:option imm) :=
-    make_state (acc vms) new_x (pkt vms) (smem vms).
+Definition change_x_reg (vms:vm_state) (new_x:imm) :=
+    make_state (acc vms) (Some new_x) (pkt vms) (smem vms).
 
 Definition change_smem (vms:vm_state) (i:nat) (v:Word.word 32) : option vm_state :=
     match get_fin i with
@@ -64,9 +62,16 @@ Inductive state : Type :=
     | End : end_state -> state.
 
 Definition init_state : state :=
-            ContState (make_state None None empty_mem empty_mem).
+            ContState (make_state None None [] empty_mem).
 
+Definition get_error (str:string) :=
+    (End (Error str), 1).
 
+Definition single_step (s:vm_state) : state * nat :=
+    (ContState s, 1).
+
+Definition jump (s:vm_state) (n:word 32) : state * nat :=
+    (ContState s, (wordToNat n) + 1).
 
 Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
     match i with
@@ -78,60 +83,137 @@ Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
                         | Some v => (End (Ret v), 1)
                     end
                 | XStoreA =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_x_reg s acc')
+                        | None =>
+                            get_error "storing acc to uninitialized x reg"
+                    end
                 | AStoreX =>
-                    (End (Error "*** fill in ***"), 1)
+                    match x_reg s with
+                        | Some x' =>
+                            single_step (change_acc s x')
+                        | None =>
+                            get_error "storing x reg to uninitialized acc"
+                    end
                 | LdXHdrLen =>
-                    (End (Error "*** fill in ***"), 1)
+                    get_error "*** fill in ***"
                 | LdLen =>
-                    (End (Error "*** fill in ***"), 1)
+                    let pkt_len := Word.natToWord 32 (length (pkt s)) in
+                    single_step (change_acc s pkt_len)
                 | LdXLen =>
-                    (End (Error "*** fill in ***"), 1)
+                    let pkt_len := Word.natToWord 32 (length (pkt s)) in
+                    single_step (change_x_reg s pkt_len)
             end
         | ImmInstr i_op i =>
             match i_op with
                 | RetK =>
                     (End (Ret i), 1)
                 | LdImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    single_step (change_acc s i)
                 | AddImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_acc s ((acc') ^+ i))
+                        | None =>
+                            get_error "Adding to uninitialized acc"
+                    end
                 | SubImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_acc s ((acc') ^- i))
+                        | None =>
+                            get_error "Subtracting to uninitialized acc"
+                    end
                 | MulImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_acc s ((acc') ^* i))
+                        | None =>
+                            get_error "Multiplying to uninitialized acc"
+                    end
                 | DivImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    get_error "no div available for word (yet)"
                 | AndImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_acc s ((acc') ^& i))
+                        | None =>
+                            get_error "And-ing to uninitialized acc"
+                    end
                 | OrImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_acc s ((acc') ^| i))
+                        | None =>
+                            get_error "Or-ing to uninitialized acc"
+                    end
                 | SLImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    get_error "no shifts available yet"
                 | SRImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    get_error "no shifts available yet"
                 | AddX =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^+ x'))
+                        | None, _ =>
+                            get_error "Adding to uninitialized acc"
+                        | _, None =>
+                            get_error "Adding uninitialized x reg"
+                    end
                 | SubX =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^- x'))
+                        | None, _ =>
+                            get_error "Subtracting to uninitialized acc"
+                        | _, None =>
+                            get_error "Subtracting uninitialized x reg"
+                    end
                 | MulX =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^* x'))
+                        | None, _ =>
+                            get_error "Multiplying to uninitialized acc"
+                        | _, None =>
+                            get_error "Multiplying uninitialized x reg"
+                    end
                 | DivX =>
                     (End (Error "*** fill in ***"), 1)
                 | AndX =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^& x'))
+                        | None, _ =>
+                            get_error "And-ing to uninitialized acc"
+                        | _, None =>
+                            get_error "And-ing uninitialized x reg"
+                    end
                 | OrX =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^| x'))
+                        | None, _ =>
+                            get_error "Or-ing to uninitialized acc"
+                        | _, None =>
+                            get_error "Or-ing uninitialized x reg"
+                    end
                 | SLX =>
-                    (End (Error "*** fill in ***"), 1)
+                    get_error "no shifts available yet"
                 | SRX =>
-                    (End (Error "*** fill in ***"), 1)
+                    get_error "no shifts available yet"
                 | Neg =>
-                    (End (Error "*** fill in ***"), 1)
+                    match acc s with
+                        | Some acc' =>
+                            single_step (change_acc s (wneg acc'))
+                        | None =>
+                            get_error "Adding to uninitialized acc"
+                    end
                 | JmpImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    jump s i
                 | LdXImm =>
-                    (End (Error "*** fill in ***"), 1)
+                    single_step (change_acc s i)
             end
         | MemInstr m_op m_addr =>
             match m_op with
