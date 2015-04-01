@@ -14,6 +14,14 @@ Inductive solo_op :=
     | RetA
     | XStoreA
     | AStoreX
+    | AddX
+    | SubX
+    | MulX
+    | DivX
+    | AndX
+    | OrX
+    | SLX
+    | SRX
     | LdXHdrLen
     | LdLen
     | LdXLen.
@@ -29,14 +37,6 @@ Inductive imm_op :=
     | OrImm
     | SLImm
     | SRImm
-    | AddX
-    | SubX
-    | MulX
-    | DivX
-    | AndX
-    | OrX
-    | SLX
-    | SRX
     | Neg
     | JmpImm
     | LdXImm.
@@ -196,6 +196,22 @@ solo_op:
       { XStoreA }
     | A_STORE_X
       { AStoreX }
+    | ADD_X
+      { AddX }
+    | SUB_X
+      { SubX }
+    | MUL_X
+      { MulX }
+    | DIV_X
+      { DivX }
+    | AND_X
+      { AndX }
+    | OR_X
+      { OrX }
+    | SL_X
+      { SLX }
+    | SR_X
+      { SRX }
     | LDX_HDR_LEN
       { LdXHdrLen }
     | LD_LEN
@@ -224,22 +240,6 @@ imm_op:
       { SLImm }
     | SR_IMM
       { SRImm }
-    | ADD_X
-      { AddX }
-    | SUB_X
-      { SubX }
-    | MUL_X
-      { MulX }
-    | DIV_X
-      { DivX }
-    | AND_X
-      { AndX }
-    | OR_X
-      { OrX }
-    | SL_X
-      { SLX }
-    | SR_X
-      { SRX }
     | NEG
       { Neg }
     | JMP_IMM

@@ -50,6 +50,7 @@ dependent:
 incr:
 	ocamllex Lexer.mll
 	menhir --coq Parser.vy
+	coqc Skipn.v
 	coqc ${COQ_DIRS} -R bedrock/src/ Bedrock Parser.v
 	coqc ${COQ_DIRS} -R bedrock/src/ Bedrock Datatypes.v
 	coqc ${COQ_DIRS} -R bedrock/src/ Bedrock Analysis.v

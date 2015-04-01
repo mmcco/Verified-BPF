@@ -9,6 +9,7 @@ Import ListNotations.
 
 Require Import Word.
 Require Import Parser.
+Require Skipn.
 
 
 (*
@@ -96,6 +97,57 @@ Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
                         | None =>
                             get_error "storing x reg to uninitialized acc"
                     end
+                | AddX =>
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^+ x'))
+                        | None, _ =>
+                            get_error "Adding to uninitialized acc"
+                        | _, None =>
+                            get_error "Adding uninitialized x reg"
+                    end
+                | SubX =>
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^- x'))
+                        | None, _ =>
+                            get_error "Subtracting to uninitialized acc"
+                        | _, None =>
+                            get_error "Subtracting uninitialized x reg"
+                    end
+                | MulX =>
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^* x'))
+                        | None, _ =>
+                            get_error "Multiplying to uninitialized acc"
+                        | _, None =>
+                            get_error "Multiplying uninitialized x reg"
+                    end
+                | DivX =>
+                    (End (Error "*** fill in ***"), 1)
+                | AndX =>
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^& x'))
+                        | None, _ =>
+                            get_error "And-ing to uninitialized acc"
+                        | _, None =>
+                            get_error "And-ing uninitialized x reg"
+                    end
+                | OrX =>
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            single_step (change_acc s ((acc') ^| x'))
+                        | None, _ =>
+                            get_error "Or-ing to uninitialized acc"
+                        | _, None =>
+                            get_error "Or-ing uninitialized x reg"
+                    end
+                | SLX =>
+                    get_error "no shifts available yet"
+                | SRX =>
+                    get_error "no shifts available yet"
                 | LdXHdrLen =>
                     get_error "*** fill in ***"
                 | LdLen =>
@@ -152,57 +204,6 @@ Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
                     get_error "no shifts available yet"
                 | SRImm =>
                     get_error "no shifts available yet"
-                | AddX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^+ x'))
-                        | None, _ =>
-                            get_error "Adding to uninitialized acc"
-                        | _, None =>
-                            get_error "Adding uninitialized x reg"
-                    end
-                | SubX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^- x'))
-                        | None, _ =>
-                            get_error "Subtracting to uninitialized acc"
-                        | _, None =>
-                            get_error "Subtracting uninitialized x reg"
-                    end
-                | MulX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^* x'))
-                        | None, _ =>
-                            get_error "Multiplying to uninitialized acc"
-                        | _, None =>
-                            get_error "Multiplying uninitialized x reg"
-                    end
-                | DivX =>
-                    (End (Error "*** fill in ***"), 1)
-                | AndX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^& x'))
-                        | None, _ =>
-                            get_error "And-ing to uninitialized acc"
-                        | _, None =>
-                            get_error "And-ing uninitialized x reg"
-                    end
-                | OrX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^| x'))
-                        | None, _ =>
-                            get_error "Or-ing to uninitialized acc"
-                        | _, None =>
-                            get_error "Or-ing uninitialized x reg"
-                    end
-                | SLX =>
-                    get_error "no shifts available yet"
-                | SRX =>
-                    get_error "no shifts available yet"
                 | Neg =>
                     match acc s with
                         | Some acc' =>
@@ -213,7 +214,7 @@ Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
                 | JmpImm =>
                     jump s i
                 | LdXImm =>
-                    single_step (change_acc s i)
+                    single_step (change_x_reg s i)
             end
         | MemInstr m_op m_addr =>
             match m_op with
@@ -241,10 +242,21 @@ Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
                 | LdXByte =>
                     (End (Error "*** fill in ***"), 1)
             end
+        (* "All conditionals use unsigned comparison conventions." *)
         | BrInstr b_op ofst1 ofst2 =>
             match b_op with
                 | JGTX =>
-                    (End (Error "*** fill in ***"), 1)
+                     (End (Error "*** fill in ***"), 1)
+                    (*
+                    match acc s, x_reg s with
+                        | Some acc', Some x' =>
+                            if wlt x' acc' then jump ofst1 else jump ofst2
+                        | None, _ =>
+                            get_error "Testing uninitialized acc"
+                        | _, None =>
+                            get_error "Testing uninitialized x reg"
+                    end
+                            *)
                 | JGEX =>
                     (End (Error "*** fill in ***"), 1)
                 | JEqX =>
@@ -287,7 +299,8 @@ Fixpoint prog_eval (ins:list instr) (s:state) (steps:nat) : end_state :=
             end
     end.
 
-(* Used to prove that offsets stay on word (and hence instruction)
+(*
+   Used to prove that offsets stay on word (and hence instruction)
    boundaries.
 *)
 
