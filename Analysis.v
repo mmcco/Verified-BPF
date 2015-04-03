@@ -13,291 +13,288 @@ Require Skipn.
 
 
 (*
-     "Each instruction performs some action on the pseudo-machine state, which
-     consists of an accumulator, index register, scratch memory store, and
-     implicit program counter."
-        -OpenBSD man page
+  "Each instruction performs some action on the pseudo-machine state, which
+   consists of an accumulator, index register, scratch memory store, and
+   implicit program counter."
+       -OpenBSD man page
 *)
 
 
 Definition scratch_mem := Vector.t (option (Word.word 32)) 16.
 
 Definition empty_mem : scratch_mem :=
-    Vector.const (None : option (Word.word 32)) 16.
-
-Record vm_state : Type := make_state {
-    (* Future instructions kept separate for ease of Fixpoint defs *)
-    acc : option imm;
-    x_reg : option imm;
-    pkt : list (Word.word 32);
-    smem : scratch_mem
-}.
+  Vector.const (None : option (Word.word 32)) 16.
 
 Definition get_fin (i:nat) : option (Vectors.Fin.t 16) :=
-    match Vectors.Fin.of_nat i 16 with
-        | inleft x => Some x
-        | _ => None
-    end.
+  match Vectors.Fin.of_nat i 16 with
+    | inleft x => Some x
+    | _ => None
+  end.
 
+Record vm_state : Type := make_state {
+  acc : option imm;
+  x_reg : option imm;
+  ins : list instr;
+  pkt : list (Word.word 32);
+  smem : scratch_mem
+}.
 
-Definition change_acc (vms:vm_state) (new_acc:imm) :=
-    make_state (Some new_acc) (x_reg vms) (pkt vms) (smem vms).
+Definition change_acc (s:vm_state) (ins:list instr) (new_acc:imm) :=
+  make_state (Some new_acc) (x_reg s) ins (pkt s) (smem s).
 
-Definition change_x_reg (vms:vm_state) (new_x:imm) :=
-    make_state (acc vms) (Some new_x) (pkt vms) (smem vms).
+Definition change_x_reg (s:vm_state) (ins:list instr) (new_x:imm) :=
+  make_state (acc s) (Some new_x) ins (pkt s) (smem s).
 
-Definition change_smem (vms:vm_state) (i:nat) (v:Word.word 32) : option vm_state :=
-    match get_fin i with
-        | Some fin =>
-            let new_mem := Vector.replace (smem vms) fin (Some v) in
-            Some (make_state (acc vms) (x_reg vms) (pkt vms) new_mem)
-        | None => None
-    end.
+Definition change_smem (s:vm_state) (ins:list instr) (i:nat) (v:Word.word 32) : option vm_state :=
+  match get_fin i with
+    | Some fin =>
+        let new_mem := Vector.replace (smem s) fin (Some v) in
+        Some (make_state (acc s) (x_reg s) ins (pkt s) new_mem)
+    | None => None
+  end.
 
 Inductive end_state : Type :=
-    | Ret : Word.word 32 -> end_state
-    | Error : string -> end_state.
+  | Ret : Word.word 32 -> end_state
+  | Error : string -> end_state.
 
 Inductive state : Type :=
-    | ContState : vm_state -> state
-    | End : end_state -> state.
+  | ContState : vm_state -> state
+  | End : end_state -> state.
 
-Definition init_state : state :=
-            ContState (make_state None None [] empty_mem).
+Definition init_state (ins:list instr) : state :=
+  ContState (make_state None None ins [] empty_mem).
 
-Definition get_error (str:string) :=
-    (End (Error str), 1).
+Definition jump (s:vm_state) (n:word 32) : state :=
+  ContState (make_state (acc s) (x_reg s) (skipn (wordToNat n) (ins s)) (pkt s) (smem s)).
 
-Definition single_step (s:vm_state) : state * nat :=
-    (ContState s, 1).
-
-Definition jump (s:vm_state) (n:word 32) : state * nat :=
-    (ContState s, (wordToNat n) + 1).
-
-Definition step (s:vm_state) (i:instr) (ins:list instr) : state * nat :=
-    match i with
+Definition step (s:vm_state) : state :=
+  match (ins s) with
+    | [] => End (Error "never reached return")
+    | i :: rest =>
+      match i with
         | SoloInstr s_op =>
             match s_op with
-                | RetA =>
-                    match acc s with
-                        | None => (End (Error "Returned uninitialized acc"), 1)
-                        | Some v => (End (Ret v), 1)
-                    end
-                | XStoreA =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_x_reg s acc')
-                        | None =>
-                            get_error "storing acc to uninitialized x reg"
-                    end
-                | AStoreX =>
-                    match x_reg s with
-                        | Some x' =>
-                            single_step (change_acc s x')
-                        | None =>
-                            get_error "storing x reg to uninitialized acc"
-                    end
-                | AddX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^+ x'))
-                        | None, _ =>
-                            get_error "Adding to uninitialized acc"
-                        | _, None =>
-                            get_error "Adding uninitialized x reg"
-                    end
-                | SubX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^- x'))
-                        | None, _ =>
-                            get_error "Subtracting to uninitialized acc"
-                        | _, None =>
-                            get_error "Subtracting uninitialized x reg"
-                    end
-                | MulX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^* x'))
-                        | None, _ =>
-                            get_error "Multiplying to uninitialized acc"
-                        | _, None =>
-                            get_error "Multiplying uninitialized x reg"
-                    end
-                | DivX =>
-                    (End (Error "*** fill in ***"), 1)
-                | AndX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^& x'))
-                        | None, _ =>
-                            get_error "And-ing to uninitialized acc"
-                        | _, None =>
-                            get_error "And-ing uninitialized x reg"
-                    end
-                | OrX =>
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            single_step (change_acc s ((acc') ^| x'))
-                        | None, _ =>
-                            get_error "Or-ing to uninitialized acc"
-                        | _, None =>
-                            get_error "Or-ing uninitialized x reg"
-                    end
-                | SLX =>
-                    get_error "no shifts available yet"
-                | SRX =>
-                    get_error "no shifts available yet"
-                | LdXHdrLen =>
-                    get_error "*** fill in ***"
-                | LdLen =>
-                    let pkt_len := Word.natToWord 32 (length (pkt s)) in
-                    single_step (change_acc s pkt_len)
-                | LdXLen =>
-                    let pkt_len := Word.natToWord 32 (length (pkt s)) in
-                    single_step (change_x_reg s pkt_len)
-            end
-        | ImmInstr i_op i =>
-            match i_op with
-                | RetK =>
-                    (End (Ret i), 1)
-                | LdImm =>
-                    single_step (change_acc s i)
-                | AddImm =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_acc s ((acc') ^+ i))
-                        | None =>
-                            get_error "Adding to uninitialized acc"
-                    end
-                | SubImm =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_acc s ((acc') ^- i))
-                        | None =>
-                            get_error "Subtracting to uninitialized acc"
-                    end
-                | MulImm =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_acc s ((acc') ^* i))
-                        | None =>
-                            get_error "Multiplying to uninitialized acc"
-                    end
-                | DivImm =>
-                    get_error "no div available for word (yet)"
-                | AndImm =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_acc s ((acc') ^& i))
-                        | None =>
-                            get_error "And-ing to uninitialized acc"
-                    end
-                | OrImm =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_acc s ((acc') ^| i))
-                        | None =>
-                            get_error "Or-ing to uninitialized acc"
-                    end
-                | SLImm =>
-                    get_error "no shifts available yet"
-                | SRImm =>
-                    get_error "no shifts available yet"
-                | Neg =>
-                    match acc s with
-                        | Some acc' =>
-                            single_step (change_acc s (wneg acc'))
-                        | None =>
-                            get_error "Adding to uninitialized acc"
-                    end
-                | JmpImm =>
-                    jump s i
-                | LdXImm =>
-                    single_step (change_x_reg s i)
-            end
-        | MemInstr m_op m_addr =>
-            match m_op with
-                | LdMem =>
-                    (End (Error "*** fill in ***"), 1)
-                | LdXMem =>
-                    (End (Error "*** fill in ***"), 1)
-                | Store =>
-                    (End (Error "*** fill in ***"), 1)
-                | StoreX =>
-                    (End (Error "*** fill in ***"), 1)
-            end
-        | PktInstr p_op p_addr =>
-            match p_op with
-                | LdWord =>
-                    (End (Error "*** fill in ***"), 1)
-                | LdHalf =>
-                    (End (Error "*** fill in ***"), 1)
-                | LdByte =>
-                    (End (Error "*** fill in ***"), 1)
-                | LdOfstWord =>
-                    (End (Error "*** fill in ***"), 1)
-                | LdOfstHalf =>
-                    (End (Error "*** fill in ***"), 1)
-                | LdXByte =>
-                    (End (Error "*** fill in ***"), 1)
-            end
-        (* "All conditionals use unsigned comparison conventions." *)
-        | BrInstr b_op ofst1 ofst2 =>
-            match b_op with
-                | JGTX =>
-                     (End (Error "*** fill in ***"), 1)
-                    (*
-                    match acc s, x_reg s with
-                        | Some acc', Some x' =>
-                            if wlt x' acc' then jump ofst1 else jump ofst2
-                        | None, _ =>
-                            get_error "Testing uninitialized acc"
-                        | _, None =>
-                            get_error "Testing uninitialized x reg"
-                    end
-                            *)
-                | JGEX =>
-                    (End (Error "*** fill in ***"), 1)
-                | JEqX =>
-                    (End (Error "*** fill in ***"), 1)
-                | JAndX =>
-                    (End (Error "*** fill in ***"), 1)
-            end
-        | ImmBrInstr i_b_op i ofst1 ofst2 =>
-            match i_b_op with
-                | JGTImm =>
-                    (End (Error "*** fill in ***"), 1)
-                | JGEImm =>
-                    (End (Error "*** fill in ***"), 1)
-                | JEqImm =>
-                    (End (Error "*** fill in ***"), 1)
-                | JAndImm =>
-                    (End (Error "*** fill in ***"), 1)
-            end
-    end.
-
-
-Fixpoint prog_eval (ins:list instr) (s:state) (steps:nat) : end_state :=
-    match s with
-        | End (e_s) => e_s
-        | ContState vms =>
-            match ins with
-                | next_i :: rest =>
-                    match steps with
-                    | 0 => Error "step size of zero"
-                    | 1 =>
-                        match s with
-                            | ContState vms =>
-                                let (vms', s_sz) := step vms next_i rest in
-                                prog_eval rest vms' s_sz
-                            | End end_s => end_s
+              | RetA =>
+                  match acc s with
+                    | None => End (Error "Returned uninitialized acc")
+                    | Some v => End (Ret v)
+                  end
+              | XStoreA =>
+                  match acc s with
+                    | Some acc' =>
+                        ContState (change_x_reg s rest acc')
+                    | None =>
+                        End (Error "storing acc to uninitialized x reg")
+                  end
+              | AStoreX =>
+                  match x_reg s with
+                    | Some x' =>
+                        ContState (change_acc s rest x')
+                    | None =>
+                        End (Error "storing x reg to uninitialized acc")
+                  end
+              | AddX =>
+                        match acc s, x_reg s with
+                            | Some acc', Some x' =>
+                                ContState (change_acc s rest ((acc') ^+ x'))
+                            | None, _ =>
+                                End (Error "Adding to uninitialized acc")
+                            | _, None =>
+                                End (Error "Adding uninitialized x reg")
                         end
-                    | S n' => prog_eval rest s n'
+                    | SubX =>
+                        match acc s, x_reg s with
+                            | Some acc', Some x' =>
+                                ContState (change_acc s rest ((acc') ^- x'))
+                            | None, _ =>
+                                End (Error "Subtracting to uninitialized acc")
+                            | _, None =>
+                                End (Error "Subtracting uninitialized x reg")
+                        end
+                    | MulX =>
+                        match acc s, x_reg s with
+                            | Some acc', Some x' =>
+                                ContState (change_acc s rest ((acc') ^* x'))
+                            | None, _ =>
+                                End (Error "Multiplying to uninitialized acc")
+                            | _, None =>
+                                End (Error "Multiplying uninitialized x reg")
+                        end
+                    | DivX =>
+                        End (Error "*** fill in ***")
+                    | AndX =>
+                        match acc s, x_reg s with
+                            | Some acc', Some x' =>
+                                ContState (change_acc s rest ((acc') ^& x'))
+                            | None, _ =>
+                                End (Error "And-ing to uninitialized acc")
+                            | _, None =>
+                                End (Error "And-ing uninitialized x reg")
+                        end
+                    | OrX =>
+                        match acc s, x_reg s with
+                            | Some acc', Some x' =>
+                                ContState (change_acc s rest ((acc') ^| x'))
+                            | None, _ =>
+                                End (Error "Or-ing to uninitialized acc")
+                            | _, None =>
+                                End (Error "Or-ing uninitialized x reg")
+                        end
+                    | SLX =>
+                        End (Error "no shifts available yet")
+                    | SRX =>
+                        End (Error "no shifts available yet")
+                    | LdXHdrLen =>
+                        End (Error "*** fill in ***")
+                    | LdLen =>
+                        let pkt_len := Word.natToWord 32 (length (pkt s)) in
+                        ContState (change_acc s rest pkt_len)
+                    | LdXLen =>
+                        let pkt_len := Word.natToWord 32 (length (pkt s)) in
+                        ContState (change_x_reg s rest pkt_len)
                 end
-                | [] => Error "empty instr list, never reached a return"
-            end
-    end.
+            | ImmInstr i_op i =>
+                match i_op with
+                    | RetK =>
+                        End (Ret i)
+                    | LdImm =>
+                        ContState (change_acc s rest i)
+                    | AddImm =>
+                        match acc s with
+                            | Some acc' =>
+                                ContState (change_acc s rest ((acc') ^+ i))
+                            | None =>
+                                End (Error "Adding to uninitialized acc")
+                        end
+                    | SubImm =>
+                        match acc s with
+                            | Some acc' =>
+                                ContState (change_acc s rest ((acc') ^- i))
+                            | None =>
+                                End (Error "Subtracting to uninitialized acc")
+                        end
+                    | MulImm =>
+                        match acc s with
+                            | Some acc' =>
+                                ContState (change_acc s rest ((acc') ^* i))
+                            | None =>
+                                End (Error "Multiplying to uninitialized acc")
+                        end
+                    | DivImm =>
+                        End (Error "no div available for word (yet)")
+                    | AndImm =>
+                        match acc s with
+                            | Some acc' =>
+                                ContState (change_acc s rest ((acc') ^& i))
+                            | None =>
+                                End (Error "And-ing to uninitialized acc")
+                        end
+                    | OrImm =>
+                        match acc s with
+                            | Some acc' =>
+                                ContState (change_acc s rest ((acc') ^| i))
+                            | None =>
+                                End (Error "Or-ing to uninitialized acc")
+                        end
+                    | SLImm =>
+                        End (Error "no shifts available yet")
+                    | SRImm =>
+                        End (Error "no shifts available yet")
+                    | Neg =>
+                        match acc s with
+                            | Some acc' =>
+                                ContState (change_acc s rest (wneg acc'))
+                            | None =>
+                                End (Error "Adding to uninitialized acc")
+                        end
+                    | JmpImm =>
+                        jump s i
+                    | LdXImm =>
+                        ContState (change_x_reg s rest i)
+                end
+            | MemInstr m_op m_addr =>
+                match m_op with
+                    | LdMem =>
+                        End (Error "*** fill in ***")
+                    | LdXMem =>
+                        End (Error "*** fill in ***")
+                    | Store =>
+                        End (Error "*** fill in ***")
+                    | StoreX =>
+                        End (Error "*** fill in ***")
+                end
+            | PktInstr p_op p_addr =>
+                match p_op with
+                    | LdWord =>
+                        End (Error "*** fill in ***")
+                    | LdHalf =>
+                        End (Error "*** fill in ***")
+                    | LdByte =>
+                        End (Error "*** fill in ***")
+                    | LdOfstWord =>
+                        End (Error "*** fill in ***")
+                    | LdOfstHalf =>
+                        End (Error "*** fill in ***")
+                    | LdXByte =>
+                        End (Error "*** fill in ***")
+                end
+            (* "All conditionals use unsigned comparison conventions." *)
+            | BrInstr b_op ofst1 ofst2 =>
+                match b_op with
+                    | JGTX =>
+                         End (Error "*** fill in ***")
+                        (*
+                        match acc s, x_reg s with
+                            | Some acc', Some x' =>
+                                if wlt x' acc' then jump ofst1 else jump ofst2
+                            | None, _ =>
+                                End (Error "Testing uninitialized acc")
+                            | _, None =>
+                                End (Error "Testing uninitialized x reg")
+                        end
+                                *)
+                    | JGEX =>
+                        End (Error "*** fill in ***")
+                    | JEqX =>
+                        End (Error "*** fill in ***")
+                    | JAndX =>
+                        End (Error "*** fill in ***")
+                end
+            | ImmBrInstr i_b_op i ofst1 ofst2 =>
+                match i_b_op with
+                    | JGTImm =>
+                        End (Error "*** fill in ***")
+                    | JGEImm =>
+                        End (Error "*** fill in ***")
+                    | JEqImm =>
+                        End (Error "*** fill in ***")
+                    | JAndImm =>
+                        End (Error "*** fill in ***")
+                end
+        end
+  end.
+
+Definition size (s:state) : nat :=
+  match s with
+    | End _ => 0
+    | ContState cs => length (ins cs)
+  end.
+
+Require Coq.Program.Wf.
+
+Program Fixpoint prog_eval (s: state) { measure (size s) } : end_state :=
+  match s with
+    | End (e_s) => e_s
+    | ContState cs => prog_eval (step cs)
+  end.
+(*
+Lemma end_less : forall a b, lt (size (End a)) (size (ContState b)).
+  simpl. intuition.*)
+
+Next Obligation.
+  induction (step cs).
+  simpl.
+  destruct cs. simpl.
 
 (*
    Used to prove that offsets stay on word (and hence instruction)
