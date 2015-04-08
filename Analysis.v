@@ -2,6 +2,7 @@ Require Import String.
 Require Import Div2.
 Require Import Bool.
 Require Import List.
+Require Import Program.
 Require Vector.
 Require Vectors.Fin.
 
@@ -31,21 +32,23 @@ Definition get_fin (i:nat) : option (Vectors.Fin.t 16) :=
     | _ => None
   end.
 
+Definition ne_ins := { l : list instr | l <> [] }.
+
 Record vm_state : Type := make_state {
   acc : option imm;
   x_reg : option imm;
-  ins : list instr;
+  ins : { l : list instr | l <> [] };
   pkt : list (Word.word 32);
   smem : scratch_mem
 }.
 
-Definition change_acc (s:vm_state) (ins:list instr) (new_acc:imm) :=
+Definition change_acc (s:vm_state) (ins:ne_ins) (new_acc:imm) :=
   make_state (Some new_acc) (x_reg s) ins (pkt s) (smem s).
 
-Definition change_x_reg (s:vm_state) (ins:list instr) (new_x:imm) :=
+Definition change_x_reg (s:vm_state) (ins:ne_ins) (new_x:imm) :=
   make_state (acc s) (Some new_x) ins (pkt s) (smem s).
 
-Definition change_smem (s:vm_state) (ins:list instr) (i:nat) (v:Word.word 32) : option vm_state :=
+Definition change_smem (s:vm_state) (ins:ne_ins) (i:nat) (v:Word.word 32) : option vm_state :=
   match get_fin i with
     | Some fin =>
         let new_mem := Vector.replace (smem s) fin (Some v) in
@@ -61,14 +64,34 @@ Inductive state : Type :=
   | ContState : vm_state -> state
   | End : end_state -> state.
 
-Definition init_state (ins:list instr) : state :=
+Definition init_state (ins:ne_ins) : state :=
   ContState (make_state None None ins [] empty_mem).
 
+Print sig.
+
+
+Theorem cons_not_nil : forall A (x:A) (l:list A), (x :: l) <> [].
+Proof.
+  discriminate.
+Qed.
+
+Definition skip_n_ni (n:nat) (l:ne_ins) : option ne_ins :=
+    match skipn n (` l) with
+      | [] => None
+      | a :: rest => Some (exist _ (a :: rest) (cons_not_nil _ a rest))
+    end.
+
 Definition jump (s:vm_state) (n:word 32) : state :=
-  ContState (make_state (acc s) (x_reg s) (skipn (wordToNat n) (ins s)) (pkt s) (smem s)).
+  match skip_n_ni (wordToNat n) (ins s) with
+    | Some ins' =>
+        ContState (make_state (acc s) (x_reg s) ins' (pkt s) (smem s))
+    | None =>
+        End (Error "jumped out of bounds")
+  end.
+   
 
 Definition step (s:vm_state) : state :=
-  match (ins s) with
+  match ` (ins s) with
     | [] => End (Error "never reached return")
     | i :: rest =>
       match i with
