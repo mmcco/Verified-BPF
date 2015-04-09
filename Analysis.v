@@ -48,8 +48,8 @@ Inductive state : Type :=
   | ContState : vm_state -> state
   | End : end_state -> state.
 
-Definition init_state (ins:list instr) : state :=
-  ContState (make_state None None ins [] empty_mem).
+Definition init_state (ins:list instr) : vm_state :=
+  make_state None None ins [] empty_mem.
 
 Definition change_acc (s:vm_state) (l:list instr) (new_acc:imm) : state :=
   ContState (make_state (Some new_acc) (x_reg s) l (pkt s) (smem s)).
@@ -285,6 +285,9 @@ Fixpoint prog_eval (fuel:nat) (s:vm_state) : end_state :=
           | ContState cs => prog_eval n cs
         end
   end.
+
+Definition run_filter (l:list instr) : end_state :=
+  prog_eval (length l) (init_state l).
 
 (*
    Used to prove that offsets stay on word (and hence instruction)

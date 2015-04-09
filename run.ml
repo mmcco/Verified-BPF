@@ -34,7 +34,7 @@ let _ =
               print_endline "parser timed out!"
       | Parsed_pr (output, _) ->
           let ins : Analysis.instr list = Obj.magic output in
-          (match Analysis.prog_eval ins Analysis.init_state (S O) with
+          (match Analysis.run_filter ins with
             | Ret w ->
                     print_endline ("runtime success! returned " ^ (string_of_int (word_to_int (int_to_nat 32) w)))
             | Error chars ->
