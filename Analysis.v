@@ -69,7 +69,7 @@ Definition change_smem (s:vm_state) (l:list instr) (i:nat) (v:Word.word 32) : st
 Definition jump (s:vm_state) (n:word 32) : state :=
   ContState (make_state (acc s) (x_reg s) (skipn (wordToNat n) (ins s)) (pkt s) (smem s)).
 
-Definition step (s:vm_state) : state :=
+Fixpoint step (s:vm_state) : state :=
   match (ins s) with
     | [] => End (Error "jumped or stepped past last instruction")
     | (curr_instr :: rest) =>
@@ -282,12 +282,33 @@ Definition size (s:state) : nat :=
     | ContState cs => length (ins cs)
   end.
 
-Program Fixpoint prog_eval (s: state) { measure (size s) } : end_state :=
-  match s with
-    | End (e_s) => e_s
-    | ContState cs => prog_eval (step cs)
+Fixpoint prog_eval (s: vm_state) : end_state :=
+  match step s with
+    | End e_s => e_s
+    | ContState cs => prog_eval cs
   end.
 
+Program Fixpoint prog_eval (s: vm_state) { measure (length (ins s)) } : end_state :=
+  match step s with
+    | End e_s => e_s
+    | ContState cs => prog_eval cs
+  end.
+Next Obligation.
+  destruct s. simpl. destruct cs. simpl. intuition.
+
+Program Fixpoint prog_eval (s: state) { measure (size s) } : end_state :=
+  match s with
+    | End e_s => e_s
+    | ContState cs => prog_eval (step cs)
+  end.
+(*
+(* Pretty much just naming step's fixpointedness *)
+Lemma step_fixpoint : forall (s:vm_state),
+  lt (size (ContState s)) (size (step s)).
+Proof.
+  simpl. intuition.
+  destruct s. simpl.
+*)
 Next Obligation.
   induction (step cs).
   simpl.
