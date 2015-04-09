@@ -276,49 +276,20 @@ Fixpoint step (s:vm_state) : state :=
           end
   end.
 
-Definition size (s:state) : nat :=
-  match s with
-    | End _ => 0
-    | ContState cs => length (ins cs)
+Fixpoint prog_eval (fuel:nat) (s:vm_state) : end_state :=
+  match fuel with
+    | O => Error "ran out of fuel"
+    | S n =>
+        match step s with
+          | End e_s => e_s
+          | ContState cs => prog_eval n cs
+        end
   end.
-
-Fixpoint prog_eval (s: vm_state) : end_state :=
-  match step s with
-    | End e_s => e_s
-    | ContState cs => prog_eval cs
-  end.
-
-Program Fixpoint prog_eval (s: vm_state) { measure (length (ins s)) } : end_state :=
-  match step s with
-    | End e_s => e_s
-    | ContState cs => prog_eval cs
-  end.
-Next Obligation.
-  destruct s. simpl. destruct cs. simpl. intuition.
-
-Program Fixpoint prog_eval (s: state) { measure (size s) } : end_state :=
-  match s with
-    | End e_s => e_s
-    | ContState cs => prog_eval (step cs)
-  end.
-(*
-(* Pretty much just naming step's fixpointedness *)
-Lemma step_fixpoint : forall (s:vm_state),
-  lt (size (ContState s)) (size (step s)).
-Proof.
-  simpl. intuition.
-  destruct s. simpl.
-*)
-Next Obligation.
-  induction (step cs).
-  simpl.
-  destruct cs. simpl.
 
 (*
    Used to prove that offsets stay on word (and hence instruction)
    boundaries.
 *)
-
 Definition word_aligned sz (w : Word.word sz) : bool :=
     let n := Word.wordToNat w in
         (negb (Word.mod2 n)) && (negb (Word.mod2 (div2 n))).
