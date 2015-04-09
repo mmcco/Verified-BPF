@@ -51,17 +51,17 @@ Inductive state : Type :=
 Definition init_state (ins:list instr) : state :=
   ContState (make_state None None ins [] empty_mem).
 
-Definition change_acc (s:vm_state) (new_acc:imm) : state :=
-  ContState (make_state (Some new_acc) (x_reg s) (ins s) (pkt s) (smem s)).
+Definition change_acc (s:vm_state) (l:list instr) (new_acc:imm) : state :=
+  ContState (make_state (Some new_acc) (x_reg s) l (pkt s) (smem s)).
 
-Definition change_x_reg (s:vm_state) (new_x:imm) : state :=
-  ContState (make_state (acc s) (Some new_x) (ins s) (pkt s) (smem s)).
+Definition change_x_reg (s:vm_state) (l:list instr) (new_x:imm) : state :=
+  ContState (make_state (acc s) (Some new_x) l (pkt s) (smem s)).
 
-Definition change_smem (s:vm_state) (i:nat) (v:Word.word 32) : state :=
+Definition change_smem (s:vm_state) (l:list instr) (i:nat) (v:Word.word 32) : state :=
     match get_fin i with
         | Some fin =>
             let new_mem := Vector.replace (smem s) fin (Some v) in
-            ContState (make_state (acc s) (x_reg s) (ins s) (pkt s) new_mem)
+            ContState (make_state (acc s) (x_reg s) l (pkt s) new_mem)
         | None =>
             End (Error "accessed uninitialized memory")
     end.
@@ -72,8 +72,8 @@ Definition jump (s:vm_state) (n:word 32) : state :=
 Definition step (s:vm_state) : state :=
   match (ins s) with
     | [] => End (Error "jumped or stepped past last instruction")
-    | (i :: rest) =>
-    match i with
+    | (curr_instr :: rest) =>
+    match curr_instr with
       | SoloInstr s_op =>
         match s_op with
           | RetA =>
@@ -84,21 +84,21 @@ Definition step (s:vm_state) : state :=
           | XStoreA =>
               match acc s with
                 | Some acc' =>
-                    change_x_reg s acc'
+                    change_x_reg s rest acc'
                 | None =>
                     End (Error "storing acc to uninitialized x reg")
               end
           | AStoreX =>
               match x_reg s with
                 | Some x' =>
-                    change_acc s x'
+                    change_acc s rest x'
                 | None =>
                     End (Error "storing x reg to uninitialized acc")
               end
               | AddX =>
                         match acc s, x_reg s with
                             | Some acc', Some x' =>
-                                change_acc s ((acc') ^+ x')
+                                change_acc s rest ((acc') ^+ x')
                             | None, _ =>
                                 End (Error "Adding to uninitialized acc")
                             | _, None =>
@@ -107,7 +107,7 @@ Definition step (s:vm_state) : state :=
                     | SubX =>
                         match acc s, x_reg s with
                             | Some acc', Some x' =>
-                                change_acc s ((acc') ^- x')
+                                change_acc s rest ((acc') ^- x')
                             | None, _ =>
                                 End (Error "Subtracting to uninitialized acc")
                             | _, None =>
@@ -116,7 +116,7 @@ Definition step (s:vm_state) : state :=
                     | MulX =>
                         match acc s, x_reg s with
                             | Some acc', Some x' =>
-                                change_acc s ((acc') ^* x')
+                                change_acc s rest ((acc') ^* x')
                             | None, _ =>
                                 End (Error "Multiplying to uninitialized acc")
                             | _, None =>
@@ -127,7 +127,7 @@ Definition step (s:vm_state) : state :=
                     | AndX =>
                         match acc s, x_reg s with
                             | Some acc', Some x' =>
-                                change_acc s ((acc') ^& x')
+                                change_acc s rest ((acc') ^& x')
                             | None, _ =>
                                 End (Error "And-ing to uninitialized acc")
                             | _, None =>
@@ -136,7 +136,7 @@ Definition step (s:vm_state) : state :=
                     | OrX =>
                         match acc s, x_reg s with
                             | Some acc', Some x' =>
-                                change_acc s ((acc') ^| x')
+                                change_acc s rest ((acc') ^| x')
                             | None, _ =>
                                 End (Error "Or-ing to uninitialized acc")
                             | _, None =>
@@ -150,35 +150,35 @@ Definition step (s:vm_state) : state :=
                         End (Error "*** fill in ***")
                     | LdLen =>
                         let pkt_len := Word.natToWord 32 (length (pkt s)) in
-                        change_acc s pkt_len
+                        change_acc s rest pkt_len
                     | LdXLen =>
                         let pkt_len := Word.natToWord 32 (length (pkt s)) in
-                        change_x_reg s pkt_len
+                        change_x_reg s rest pkt_len
                 end
             | ImmInstr i_op i =>
                 match i_op with
                     | RetK =>
                         End (Ret i)
                     | LdImm =>
-                        change_acc s i
+                        change_acc s rest i
                     | AddImm =>
                         match acc s with
                             | Some acc' =>
-                                change_acc s ((acc') ^+ i)
+                                change_acc s rest ((acc') ^+ i)
                             | None =>
                                 End (Error "Adding to uninitialized acc")
                         end
                     | SubImm =>
                         match acc s with
                             | Some acc' =>
-                                change_acc s ((acc') ^- i)
+                                change_acc s rest ((acc') ^- i)
                             | None =>
                                 End (Error "Subtracting to uninitialized acc")
                         end
                     | MulImm =>
                         match acc s with
                             | Some acc' =>
-                                change_acc s ((acc') ^* i)
+                                change_acc s rest ((acc') ^* i)
                             | None =>
                                 End (Error "Multiplying to uninitialized acc")
                         end
@@ -187,14 +187,14 @@ Definition step (s:vm_state) : state :=
                     | AndImm =>
                         match acc s with
                             | Some acc' =>
-                                change_acc s ((acc') ^& i)
+                                change_acc s rest ((acc') ^& i)
                             | None =>
                                 End (Error "And-ing to uninitialized acc")
                         end
                     | OrImm =>
                         match acc s with
                             | Some acc' =>
-                                change_acc s ((acc') ^| i)
+                                change_acc s rest ((acc') ^| i)
                             | None =>
                                 End (Error "Or-ing to uninitialized acc")
                         end
@@ -205,14 +205,14 @@ Definition step (s:vm_state) : state :=
                     | Neg =>
                         match acc s with
                             | Some acc' =>
-                                change_acc s (wneg acc')
+                                change_acc s rest (wneg acc')
                             | None =>
                                 End (Error "Adding to uninitialized acc")
                         end
                     | JmpImm =>
                         jump s i
                     | LdXImm =>
-                        change_x_reg s i
+                        change_x_reg s rest i
                 end
             | MemInstr m_op m_addr =>
                 match m_op with
