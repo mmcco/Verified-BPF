@@ -58,7 +58,7 @@ Inductive token_ind :=
     | MEM_ADDR'tok : nat -> token_ind
     | PKT_ADDR'tok : nat -> token_ind
 
-    | NEWLINE'tok
+    | LINEBREAK'tok
     | EOF'tok.
 
 (*
@@ -171,8 +171,8 @@ Definition get_token (ti : token_ind) : Aut.GramDefs.token :=
         | PKT_ADDR'tok i =>
             get_sst Gram.PKT_ADDR't i
 
-        | NEWLINE'tok =>
-            get_sst Gram.NEWLINE't tt
+        | LINEBREAK'tok =>
+            get_sst Gram.LINEBREAK't tt
         | EOF'tok =>
             get_sst Gram.EOF't tt
     end.

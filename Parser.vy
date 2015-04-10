@@ -129,7 +129,7 @@ Inductive instr :=
 %token <nat> NUM
 %token <nat> MEM_ADDR
 %token <nat> PKT_ADDR
-%token NEWLINE EOF
+%token LINEBREAK EOF
 
 %type <instr> pinstr
 
@@ -144,12 +144,10 @@ Inductive instr :=
 %%
 
 pinstrs:
-    | pinstr=pinstr; NEWLINE; rest=pinstrs
+    | pinstr=pinstr; LINEBREAK; rest=pinstrs
       { (pinstr :: rest) }
-    | pinstr=pinstr; EOF;
+    | pinstr=pinstr; LINEBREAK; EOF;
       { (pinstr :: []) }
-    | EOF
-      { [] }
 
 pinstr: 
     | opcode=solo_op
