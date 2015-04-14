@@ -221,7 +221,10 @@ Fixpoint step (s:vm_state) : state :=
                     | LdXMem =>
                         End (Error "*** fill in ***")
                     | Store =>
-                        End (Error "*** fill in ***")
+                        match acc s with
+                          | None => End (Error "using uninitialized acc as mem addr")
+                          | Some a => change_smem s rest (wordToNat m_addr) a
+                        end
                     | StoreX =>
                         End (Error "*** fill in ***")
                 end
