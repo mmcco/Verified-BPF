@@ -13,31 +13,6 @@ VAL_FILES=validator/Alphabet.v \
 COQ_DIRS=-I . -I validator -I includes -I bedrock/src
 
 all:
-	# independent Bedrock libraries
-	#coqc bedrock/Labels.v
-	#coqc bedrock/Nomega.v
-	#coqc bedrock/Reflection.v
-	#coqc bedrock/EqdepClass.v
-	# this one takes longer than the rest combined
-	#coqc bedrock/PropX.v
-	${MAKE} dependent
-
-dependent:
-	#coqc -I bedrock bedrock/Folds.v
-	#coqc -I bedrock bedrock/NatMap.v
-	#coqc -I bedrock bedrock/Word.v
-	#coqc -I bedrock bedrock/Memory.v
-	#coqc -I bedrock bedrock/Decidables.v
-	#coqc -I bedrock bedrock/DepList.v
-	#coqc -I bedrock bedrock/Expr.v
-	#coqc -I bedrock bedrock/Heaps.v
-	#coqc -I bedrock bedrock/PropXTac.v
-	#coqc -I bedrock bedrock/PropXRel.v
-	#coqc -I bedrock bedrock/IL.v
-	#coqc -I bedrock bedrock/SepTheoryX.v
-	#coqc -I bedrock bedrock/SepTheoryXIL.v
-	#coqc -I bedrock bedrock/SepExpr.v
-	#coqc -I bedrock bedrock/SepIL.v
 	# the CompCert parser validator
 	coqc -I validator ${VAL_FILES}
 	# includes from other parts of CompCert

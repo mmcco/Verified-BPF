@@ -1,0 +1,5 @@
+ld_imm 79
+store M[5]
+ld_imm 0
+ld_mem M[5]
+ret_a

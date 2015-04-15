@@ -4,10 +4,8 @@ Require Import String.
 Require Import Word.
 Require Import Memory.
 
-Definition imm : Type := word 32 % type.
-Definition pkt_addr : Type := word 32 % type.
-Definition mem_addr : Type := word 32 % type.
-Definition offset : Type := word 8 % type.
+Definition W : Type := word 32 % type.
+Definition B : Type := word 8 % type.
 Parameter terminal : Type.
 
 Inductive solo_op :=
@@ -69,11 +67,11 @@ Inductive imm_br_op :=
 
 Inductive instr :=
     | SoloInstr : solo_op -> instr
-    | ImmInstr : imm_op -> imm -> instr
-    | MemInstr : mem_op -> mem_addr -> instr
-    | PktInstr : pkt_op -> pkt_addr -> instr
-    | BrInstr : br_op -> offset -> offset -> instr
-    | ImmBrInstr : imm_br_op -> imm -> offset -> offset -> instr.
+    | ImmInstr : imm_op -> W -> instr
+    | MemInstr : mem_op -> W -> instr
+    | PktInstr : pkt_op -> W -> instr
+    | BrInstr : br_op -> B -> B -> instr
+    | ImmBrInstr : imm_br_op -> W -> B -> B -> instr.
 
 %}
 
