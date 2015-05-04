@@ -1,0 +1,16 @@
+# This filter accepts only IP packets between host 128.3.112.15 and
+# 128.3.112.35.
+
+# Taken from OpenBSD's BPF man page.
+
+ld_half P[12]
+jeq_imm 2048 0 8
+ld_word P[26]
+jeq_imm 2147708943 0 2
+ld_word P[30]
+jeq_imm 2147708963 3 4
+jeq_imm 2147708963 0 3
+ld_word P[30]
+jeq_imm 2147708943 0 1
+ret_k 1
+ret_k 0
