@@ -45,6 +45,8 @@ rule lex = parse
 
   | whitespace
     { lex lexbuf }
+  | '#' [^'\n'] '\n'
+    { lex lexbuf }
   | newline+
     { get_token LINEBREAK'tok }
   | eof
