@@ -45,4 +45,4 @@ clean:
 		Parser.v validator/*.{glob,vo} Main.ml \
 		Main.mli Parser.mli Lexer.mli Word.ml \
 		includes/*.cm{o,i} \
-		Analysis.ml{,i}
+		Analysis.ml{,i} bedrock/src/*.{glob,vo,v.d}

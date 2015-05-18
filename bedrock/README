@@ -1,0 +1,21 @@
+The BEDROCK Coq library
+Mostly automated verification of higher-order programs with higher-order separation logic, with a small trusted code base
+http://plv.csail.mit.edu/bedrock/
+
+
+This source snapshot goes with a POPL'15 submission.
+
+To build, just run:
+  make
+We do recommend using a flag like '-j8', depending on how many cores and how much memory you have.
+A serial build will almost certainly take more than just an overnight run, while a maximally parallel build will probably use tens of gigabytes of memory.
+
+If you're running 64-bit x86 Linux, then the build process should wrap up by generating
+  platform/tests/RosMaster.exe
+which is the native-code executable for the main case-study application from the paper.  You can interact with a running server using some of the standard ROS tools, like 'rosparam'.  More ROS info at:
+  http://www.ros.org/
+
+The source code for that application appears in
+  platform/tests/RosMasterDriver.v
+
+This source snapshot requires Coq version 8.4pl2.

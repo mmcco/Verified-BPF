@@ -1,7 +1,7 @@
 *.glob
 *.automaton
 *.vo
+*.v.d
 *.cmi
 *.cmo
 graveyard
-bedrock
